@@ -2,7 +2,7 @@
 ## Makefile generated for component 'computeForwardKinematicsFast'. 
 ## 
 ## Makefile     : computeForwardKinematicsFast_rtw.mk
-## Generated on : Wed Feb 16 12:13:24 2022
+## Generated on : Wed Feb 16 16:47:44 2022
 ## Final product: ./computeForwardKinematicsFast.a
 ## Product type : static-library
 ## 
@@ -22,7 +22,7 @@ MAKEFILE                  = computeForwardKinematicsFast_rtw.mk
 MATLAB_ROOT               = /usr/local/MATLAB/R2021a
 MATLAB_BIN                = /usr/local/MATLAB/R2021a/bin
 MATLAB_ARCH_BIN           = $(MATLAB_BIN)/glnxa64
-START_DIR                 = /home/brandon/Documents/MATLAB/SorotokiCode/src/model/mex/forwardkin/codegen/lib/computeForwardKinematicsFast
+START_DIR                 = /home/hoang/SorotokiCode/src/model/mex/forwardkin/codegen/lib/computeForwardKinematicsFast
 TGT_FCN_LIB               = ISO_C
 SOLVER_OBJ                = 
 CLASSIC_INTERFACE         = 0
@@ -150,7 +150,7 @@ BUILD_TYPE = "Static Library"
 ## INCLUDE PATHS
 ###########################################################################
 
-INCLUDES_BUILDINFO = -I$(START_DIR) -I/home/brandon/Documents/MATLAB/SorotokiCode/src/model/mex/forwardkin -I$(MATLAB_ROOT)/extern/include
+INCLUDES_BUILDINFO = -I$(START_DIR) -I/home/hoang/SorotokiCode/src/model/mex/forwardkin -I$(MATLAB_ROOT)/extern/include
 
 INCLUDES = $(INCLUDES_BUILDINFO)
 
@@ -290,11 +290,11 @@ $(PRODUCT) : $(OBJS) $(PREBUILT_OBJS)
 	$(CPP) $(CPPFLAGS) -o "$@" "$<"
 
 
-%.o : /home/brandon/Documents/MATLAB/SorotokiCode/src/model/mex/forwardkin/%.c
+%.o : /home/hoang/SorotokiCode/src/model/mex/forwardkin/%.c
 	$(CC) $(CFLAGS) -o "$@" "$<"
 
 
-%.o : /home/brandon/Documents/MATLAB/SorotokiCode/src/model/mex/forwardkin/%.cpp
+%.o : /home/hoang/SorotokiCode/src/model/mex/forwardkin/%.cpp
 	$(CPP) $(CPPFLAGS) -o "$@" "$<"
 
 

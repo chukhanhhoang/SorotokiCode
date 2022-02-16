@@ -9,7 +9,7 @@ for ii = 1:M
    Y(:,ii) = chebyshev(X/L,ii-1); 
 end
 
-Modes = [0,M,0,M,0,0];   % curvature-elongation
+Modes = [0,M,0,1,0,0];   % curvature-elongation
 
 shp = Shapes(Y,Modes,'L0',L);
 
@@ -48,15 +48,15 @@ Ktt  = shp.Ktt;
 Mtt  = shp.Mtt;
 Zeta = shp.Zeta;
 
-% [M,C,K,R,G,p,Phi,J,Vg,Kin] = computeLagrangianFast(x,dx,... % states
-%     ds,...      % spatial steps
-%     p0,...      % position zero
-%     Phi0,...    % phi zero
-%     xia0,...    % intrinsic strain vector
-%     Th,...      % evaluated Theta matrix
-%     Ba,...      % state to strain matrix
-%     Ktt,...     % geometric stiffness
-%     Mtt,...     % geometric inertia
-%     Zeta);      
+[M,C,K,R,G,p,Phi,J,Vg,Kin] = computeLagrangianFast(x,dx,... % states
+    ds,...      % spatial steps
+    p0,...      % position zero
+    Phi0,...    % phi zero
+    xia0,...    % intrinsic strain vector
+    Th,...      % evaluated Theta matrix
+    Ba,...      % state to strain matrix
+    Ktt,...     % geometric stiffness
+    Mtt,...     % geometric inertia
+    Zeta);      
 
 %clearvars -except M C K R G p Phi J Vg Kin
