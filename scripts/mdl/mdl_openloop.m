@@ -70,8 +70,8 @@ n = numel(mdl.Log.q);
 t = mdl.Log.t;
 
 tau        = zeros(n,1);
-tau(1)     = 9*smoothstep(t)*sin(3*t);
-tau(n/2+1) = 9*smoothstep(t)*cos(t);
+% tau(1)     = 9*smoothstep(t)*sin(3*t);
+% tau(n/2+1) = 9*smoothstep(t)*cos(t);
 end
 
 %% setup rig

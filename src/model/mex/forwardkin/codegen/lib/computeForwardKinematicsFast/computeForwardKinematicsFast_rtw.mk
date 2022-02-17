@@ -2,8 +2,8 @@
 ## Makefile generated for component 'computeForwardKinematicsFast'. 
 ## 
 ## Makefile     : computeForwardKinematicsFast_rtw.mk
-## Generated on : Wed Feb 16 12:13:24 2022
-## Final product: ./computeForwardKinematicsFast.a
+## Generated on : Thu Feb 17 14:33:47 2022
+## Final product: .\computeForwardKinematicsFast.lib
 ## Product type : static-library
 ## 
 ###########################################################################
@@ -15,29 +15,34 @@
 # Macro Descriptions:
 # PRODUCT_NAME            Name of the system to build
 # MAKEFILE                Name of this makefile
+# COMPILER_COMMAND_FILE   Compiler command listing model reference header paths
+# CMD_FILE                Command file
 # MODELLIB                Static library target
 
 PRODUCT_NAME              = computeForwardKinematicsFast
 MAKEFILE                  = computeForwardKinematicsFast_rtw.mk
-MATLAB_ROOT               = /usr/local/MATLAB/R2021a
-MATLAB_BIN                = /usr/local/MATLAB/R2021a/bin
-MATLAB_ARCH_BIN           = $(MATLAB_BIN)/glnxa64
-START_DIR                 = /home/brandon/Documents/MATLAB/SorotokiCode/src/model/mex/forwardkin/codegen/lib/computeForwardKinematicsFast
+MATLAB_ROOT               = C:\PROGRA~1\MATLAB\R2021a
+MATLAB_BIN                = C:\PROGRA~1\MATLAB\R2021a\bin
+MATLAB_ARCH_BIN           = $(MATLAB_BIN)\win64
+START_DIR                 = D:\Work\2022\GradProject\SorotokiCode\src\model\mex\forwardkin\codegen\lib\computeForwardKinematicsFast
 TGT_FCN_LIB               = ISO_C
 SOLVER_OBJ                = 
 CLASSIC_INTERFACE         = 0
 MODEL_HAS_DYNAMICALLY_LOADED_SFCNS = 
 RELATIVE_PATH_TO_ANCHOR   = .
-C_STANDARD_OPTS           = -fwrapv
-CPP_STANDARD_OPTS         = -fwrapv
-MODELLIB                  = computeForwardKinematicsFast.a
+COMPILER_COMMAND_FILE     = computeForwardKinematicsFast_rtw_comp.rsp
+CMD_FILE                  = computeForwardKinematicsFast_rtw.rsp
+C_STANDARD_OPTS           = 
+CPP_STANDARD_OPTS         = 
+NODEBUG                   = 1
+MODELLIB                  = computeForwardKinematicsFast.lib
 
 ###########################################################################
 ## TOOLCHAIN SPECIFICATIONS
 ###########################################################################
 
-# Toolchain Name:          GNU gcc/g++ | gmake (64-bit Linux)
-# Supported Version(s):    
+# Toolchain Name:          Microsoft Visual C++ 2019 v16.0 | nmake (64-bit Windows)
+# Supported Version(s):    16.0
 # ToolchainInfo Version:   2021a
 # Specification Revision:  1.0
 # 
@@ -45,17 +50,26 @@ MODELLIB                  = computeForwardKinematicsFast.a
 # Macros assumed to be defined elsewhere
 #-------------------------------------------
 
-# C_STANDARD_OPTS
-# CPP_STANDARD_OPTS
+# NODEBUG
+# cvarsdll
+# cvarsmt
+# conlibsmt
+# ldebug
+# conflags
+# cflags
 
 #-----------
 # MACROS
 #-----------
 
-WARN_FLAGS         = -Wall -W -Wwrite-strings -Winline -Wstrict-prototypes -Wnested-externs -Wpointer-arith -Wcast-align
-WARN_FLAGS_MAX     = $(WARN_FLAGS) -Wcast-qual -Wshadow
-CPP_WARN_FLAGS     = -Wall -W -Wwrite-strings -Winline -Wpointer-arith -Wcast-align
-CPP_WARN_FLAGS_MAX = $(CPP_WARN_FLAGS) -Wcast-qual -Wshadow
+MW_EXTERNLIB_DIR    = $(MATLAB_ROOT)\extern\lib\win64\microsoft
+MW_LIB_DIR          = $(MATLAB_ROOT)\lib\win64
+CPU                 = AMD64
+APPVER              = 5.02
+CVARSFLAG           = $(cvarsmt)
+CFLAGS_ADDITIONAL   = -D_CRT_SECURE_NO_WARNINGS
+CPPFLAGS_ADDITIONAL = -EHs -D_CRT_SECURE_NO_WARNINGS /wd4251
+LIBS_TOOLCHAIN      = $(conlibs)
 
 TOOLCHAIN_SRCS = 
 TOOLCHAIN_INCS = 
@@ -65,24 +79,24 @@ TOOLCHAIN_LIBS =
 # BUILD TOOL COMMANDS
 #------------------------
 
-# C Compiler: GNU C Compiler
-CC = gcc
+# C Compiler: Microsoft Visual C Compiler
+CC = cl
 
-# Linker: GNU Linker
-LD = g++
+# Linker: Microsoft Visual C Linker
+LD = link
 
-# C++ Compiler: GNU C++ Compiler
-CPP = g++
+# C++ Compiler: Microsoft Visual C++ Compiler
+CPP = cl
 
-# C++ Linker: GNU C++ Linker
-CPP_LD = g++
+# C++ Linker: Microsoft Visual C++ Linker
+CPP_LD = link
 
-# Archiver: GNU Archiver
-AR = ar
+# Archiver: Microsoft Visual C/C++ Archiver
+AR = lib
 
 # MEX Tool: MEX Tool
 MEX_PATH = $(MATLAB_ARCH_BIN)
-MEX = "$(MEX_PATH)/mex"
+MEX = "$(MEX_PATH)\mex"
 
 # Download: Download
 DOWNLOAD =
@@ -90,51 +104,52 @@ DOWNLOAD =
 # Execute: Execute
 EXECUTE = $(PRODUCT)
 
-# Builder: GMAKE Utility
-MAKE_PATH = %MATLAB%/bin/glnxa64
-MAKE = "$(MAKE_PATH)/gmake"
+# Builder: NMAKE Utility
+MAKE = nmake
 
 
 #-------------------------
 # Directives/Utilities
 #-------------------------
 
-CDEBUG              = -g
-C_OUTPUT_FLAG       = -o
-LDDEBUG             = -g
-OUTPUT_FLAG         = -o
-CPPDEBUG            = -g
-CPP_OUTPUT_FLAG     = -o
-CPPLDDEBUG          = -g
-OUTPUT_FLAG         = -o
+CDEBUG              = -Zi
+C_OUTPUT_FLAG       = -Fo
+LDDEBUG             = /DEBUG
+OUTPUT_FLAG         = -out:
+CPPDEBUG            = -Zi
+CPP_OUTPUT_FLAG     = -Fo
+CPPLDDEBUG          = /DEBUG
+OUTPUT_FLAG         = -out:
 ARDEBUG             =
-STATICLIB_OUTPUT_FLAG =
+STATICLIB_OUTPUT_FLAG = -out:
 MEX_DEBUG           = -g
-RM                  = @rm -f
+RM                  = @del
 ECHO                = @echo
-MV                  = @mv
-RUN                 =
+MV                  = @ren
+RUN                 = @cmd /C
 
 #--------------------------------------
 # "Faster Runs" Build Configuration
 #--------------------------------------
 
-ARFLAGS              = ruvs
-CFLAGS               = -c $(C_STANDARD_OPTS) -fPIC \
-                       -O3 -fno-loop-optimize -fno-aggressive-loop-optimizations
-CPPFLAGS             = -c $(CPP_STANDARD_OPTS) -fPIC \
-                       -O3 -fno-loop-optimize -fno-aggressive-loop-optimizations
-CPP_LDFLAGS          =
-CPP_SHAREDLIB_LDFLAGS  = -shared -Wl,--no-undefined
+ARFLAGS              = /nologo
+CFLAGS               = $(cflags) $(CVARSFLAG) $(CFLAGS_ADDITIONAL) \
+                       /O2 /Oy-
+CPPFLAGS             = /TP $(cflags) $(CVARSFLAG) $(CPPFLAGS_ADDITIONAL) \
+                       /O2 /Oy-
+CPP_LDFLAGS          = $(ldebug) $(conflags) $(LIBS_TOOLCHAIN)
+CPP_SHAREDLIB_LDFLAGS  = $(ldebug) $(conflags) $(LIBS_TOOLCHAIN) \
+                         -dll -def:$(DEF_FILE)
 DOWNLOAD_FLAGS       =
 EXECUTE_FLAGS        =
-LDFLAGS              =
+LDFLAGS              = $(ldebug) $(conflags) $(LIBS_TOOLCHAIN)
 MEX_CPPFLAGS         =
 MEX_CPPLDFLAGS       =
 MEX_CFLAGS           =
 MEX_LDFLAGS          =
 MAKE_FLAGS           = -f $(MAKEFILE)
-SHAREDLIB_LDFLAGS    = -shared -Wl,--no-undefined
+SHAREDLIB_LDFLAGS    = $(ldebug) $(conflags) $(LIBS_TOOLCHAIN) \
+                       -dll -def:$(DEF_FILE)
 
 
 
@@ -142,7 +157,7 @@ SHAREDLIB_LDFLAGS    = -shared -Wl,--no-undefined
 ## OUTPUT INFO
 ###########################################################################
 
-PRODUCT = ./computeForwardKinematicsFast.a
+PRODUCT = .\computeForwardKinematicsFast.lib
 PRODUCT_TYPE = "static-library"
 BUILD_TYPE = "Static Library"
 
@@ -150,7 +165,7 @@ BUILD_TYPE = "Static Library"
 ## INCLUDE PATHS
 ###########################################################################
 
-INCLUDES_BUILDINFO = -I$(START_DIR) -I/home/brandon/Documents/MATLAB/SorotokiCode/src/model/mex/forwardkin -I$(MATLAB_ROOT)/extern/include
+INCLUDES_BUILDINFO = 
 
 INCLUDES = $(INCLUDES_BUILDINFO)
 
@@ -167,7 +182,7 @@ DEFINES = $(DEFINES_CUSTOM) $(DEFINES_STANDARD)
 ## SOURCE FILES
 ###########################################################################
 
-SRCS = $(START_DIR)/computeForwardKinematicsFast_data.c $(START_DIR)/computeForwardKinematicsFast_initialize.c $(START_DIR)/computeForwardKinematicsFast_terminate.c $(START_DIR)/computeForwardKinematicsFast.c $(START_DIR)/computeForwardKinematicsFast_emxutil.c $(START_DIR)/computeForwardKinematicsFast_emxAPI.c
+SRCS = $(START_DIR)\computeForwardKinematicsFast_data.c $(START_DIR)\computeForwardKinematicsFast_initialize.c $(START_DIR)\computeForwardKinematicsFast_terminate.c $(START_DIR)\computeForwardKinematicsFast.c $(START_DIR)\computeForwardKinematicsFast_emxutil.c $(START_DIR)\computeForwardKinematicsFast_emxAPI.c
 
 ALL_SRCS = $(SRCS)
 
@@ -175,7 +190,7 @@ ALL_SRCS = $(SRCS)
 ## OBJECTS
 ###########################################################################
 
-OBJS = computeForwardKinematicsFast_data.o computeForwardKinematicsFast_initialize.o computeForwardKinematicsFast_terminate.o computeForwardKinematicsFast.o computeForwardKinematicsFast_emxutil.o computeForwardKinematicsFast_emxAPI.o
+OBJS = computeForwardKinematicsFast_data.obj computeForwardKinematicsFast_initialize.obj computeForwardKinematicsFast_terminate.obj computeForwardKinematicsFast.obj computeForwardKinematicsFast_emxutil.obj computeForwardKinematicsFast_emxAPI.obj
 
 ALL_OBJS = $(OBJS)
 
@@ -195,7 +210,7 @@ LIBS =
 ## SYSTEM LIBRARIES
 ###########################################################################
 
-SYSTEM_LIBS =  -lm
+SYSTEM_LIBS = 
 
 ###########################################################################
 ## ADDITIONAL TOOLCHAIN FLAGS
@@ -205,34 +220,40 @@ SYSTEM_LIBS =  -lm
 # C Compiler
 #---------------
 
-CFLAGS_BASIC = $(DEFINES) $(INCLUDES)
+CFLAGS_ = /source-charset:utf-8
+CFLAGS_BASIC = $(DEFINES) @$(COMPILER_COMMAND_FILE)
 
-CFLAGS += $(CFLAGS_BASIC)
+CFLAGS = $(CFLAGS) $(CFLAGS_) $(CFLAGS_BASIC)
 
 #-----------------
 # C++ Compiler
 #-----------------
 
-CPPFLAGS_BASIC = $(DEFINES) $(INCLUDES)
+CPPFLAGS_ = /source-charset:utf-8
+CPPFLAGS_BASIC = $(DEFINES) @$(COMPILER_COMMAND_FILE)
 
-CPPFLAGS += $(CPPFLAGS_BASIC)
+CPPFLAGS = $(CPPFLAGS) $(CPPFLAGS_) $(CPPFLAGS_BASIC)
 
 ###########################################################################
 ## INLINED COMMANDS
 ###########################################################################
 
+
+!include $(MATLAB_ROOT)\rtw\c\tools\vcdefs.mak
+
+
 ###########################################################################
 ## PHONY TARGETS
 ###########################################################################
 
-.PHONY : all build clean info prebuild download execute
+.PHONY : all build clean info prebuild download execute set_environment_variables
 
 
 all : build
-	@echo "### Successfully generated all binary outputs."
+	@cmd /C "@echo ### Successfully generated all binary outputs."
 
 
-build : prebuild $(PRODUCT)
+build : set_environment_variables prebuild $(PRODUCT)
 
 
 prebuild : 
@@ -244,6 +265,11 @@ download : $(PRODUCT)
 execute : download
 
 
+set_environment_variables : 
+	@set INCLUDE=$(INCLUDES);$(INCLUDE)
+	@set LIB=$(LIB)
+
+
 ###########################################################################
 ## FINAL TARGET
 ###########################################################################
@@ -253,9 +279,9 @@ execute : download
 #---------------------------------
 
 $(PRODUCT) : $(OBJS) $(PREBUILT_OBJS)
-	@echo "### Creating static library "$(PRODUCT)" ..."
-	$(AR) $(ARFLAGS)  $(PRODUCT) $(OBJS)
-	@echo "### Created: $(PRODUCT)"
+	@cmd /C "@echo ### Creating static library "$(PRODUCT)" ..."
+	$(AR) $(ARFLAGS) -out:$(PRODUCT) @$(CMD_FILE)
+	@cmd /C "@echo ### Created: $(PRODUCT)"
 
 
 ###########################################################################
@@ -266,67 +292,67 @@ $(PRODUCT) : $(OBJS) $(PREBUILT_OBJS)
 # SOURCE-TO-OBJECT
 #---------------------
 
-%.o : %.c
-	$(CC) $(CFLAGS) -o "$@" "$<"
+.c.obj :
+	$(CC) $(CFLAGS) -Fo"$@" "$<"
 
 
-%.o : %.cpp
-	$(CPP) $(CPPFLAGS) -o "$@" "$<"
+.cpp.obj :
+	$(CPP) $(CPPFLAGS) -Fo"$@" "$<"
 
 
-%.o : $(RELATIVE_PATH_TO_ANCHOR)/%.c
-	$(CC) $(CFLAGS) -o "$@" "$<"
+{$(RELATIVE_PATH_TO_ANCHOR)}.c.obj :
+	$(CC) $(CFLAGS) -Fo"$@" "$<"
 
 
-%.o : $(RELATIVE_PATH_TO_ANCHOR)/%.cpp
-	$(CPP) $(CPPFLAGS) -o "$@" "$<"
+{$(RELATIVE_PATH_TO_ANCHOR)}.cpp.obj :
+	$(CPP) $(CPPFLAGS) -Fo"$@" "$<"
 
 
-%.o : $(START_DIR)/%.c
-	$(CC) $(CFLAGS) -o "$@" "$<"
+{$(START_DIR)}.c.obj :
+	$(CC) $(CFLAGS) -Fo"$@" "$<"
 
 
-%.o : $(START_DIR)/%.cpp
-	$(CPP) $(CPPFLAGS) -o "$@" "$<"
+{$(START_DIR)}.cpp.obj :
+	$(CPP) $(CPPFLAGS) -Fo"$@" "$<"
 
 
-%.o : /home/brandon/Documents/MATLAB/SorotokiCode/src/model/mex/forwardkin/%.c
-	$(CC) $(CFLAGS) -o "$@" "$<"
+{D:\Work\2022\GradProject\SorotokiCode\src\model\mex\forwardkin}.c.obj :
+	$(CC) $(CFLAGS) -Fo"$@" "$<"
 
 
-%.o : /home/brandon/Documents/MATLAB/SorotokiCode/src/model/mex/forwardkin/%.cpp
-	$(CPP) $(CPPFLAGS) -o "$@" "$<"
+{D:\Work\2022\GradProject\SorotokiCode\src\model\mex\forwardkin}.cpp.obj :
+	$(CPP) $(CPPFLAGS) -Fo"$@" "$<"
 
 
-computeForwardKinematicsFast_data.o : $(START_DIR)/computeForwardKinematicsFast_data.c
-	$(CC) $(CFLAGS) -o "$@" "$<"
+computeForwardKinematicsFast_data.obj : $(START_DIR)\computeForwardKinematicsFast_data.c
+	$(CC) $(CFLAGS) -Fo"$@" $(START_DIR)\computeForwardKinematicsFast_data.c
 
 
-computeForwardKinematicsFast_initialize.o : $(START_DIR)/computeForwardKinematicsFast_initialize.c
-	$(CC) $(CFLAGS) -o "$@" "$<"
+computeForwardKinematicsFast_initialize.obj : $(START_DIR)\computeForwardKinematicsFast_initialize.c
+	$(CC) $(CFLAGS) -Fo"$@" $(START_DIR)\computeForwardKinematicsFast_initialize.c
 
 
-computeForwardKinematicsFast_terminate.o : $(START_DIR)/computeForwardKinematicsFast_terminate.c
-	$(CC) $(CFLAGS) -o "$@" "$<"
+computeForwardKinematicsFast_terminate.obj : $(START_DIR)\computeForwardKinematicsFast_terminate.c
+	$(CC) $(CFLAGS) -Fo"$@" $(START_DIR)\computeForwardKinematicsFast_terminate.c
 
 
-computeForwardKinematicsFast.o : $(START_DIR)/computeForwardKinematicsFast.c
-	$(CC) $(CFLAGS) -o "$@" "$<"
+computeForwardKinematicsFast.obj : $(START_DIR)\computeForwardKinematicsFast.c
+	$(CC) $(CFLAGS) -Fo"$@" $(START_DIR)\computeForwardKinematicsFast.c
 
 
-computeForwardKinematicsFast_emxutil.o : $(START_DIR)/computeForwardKinematicsFast_emxutil.c
-	$(CC) $(CFLAGS) -o "$@" "$<"
+computeForwardKinematicsFast_emxutil.obj : $(START_DIR)\computeForwardKinematicsFast_emxutil.c
+	$(CC) $(CFLAGS) -Fo"$@" $(START_DIR)\computeForwardKinematicsFast_emxutil.c
 
 
-computeForwardKinematicsFast_emxAPI.o : $(START_DIR)/computeForwardKinematicsFast_emxAPI.c
-	$(CC) $(CFLAGS) -o "$@" "$<"
+computeForwardKinematicsFast_emxAPI.obj : $(START_DIR)\computeForwardKinematicsFast_emxAPI.c
+	$(CC) $(CFLAGS) -Fo"$@" $(START_DIR)\computeForwardKinematicsFast_emxAPI.c
 
 
 ###########################################################################
 ## DEPENDENCIES
 ###########################################################################
 
-$(ALL_OBJS) : rtw_proj.tmw $(MAKEFILE)
+$(ALL_OBJS) : rtw_proj.tmw $(COMPILER_COMMAND_FILE) $(MAKEFILE)
 
 
 ###########################################################################
@@ -334,36 +360,36 @@ $(ALL_OBJS) : rtw_proj.tmw $(MAKEFILE)
 ###########################################################################
 
 info : 
-	@echo "### PRODUCT = $(PRODUCT)"
-	@echo "### PRODUCT_TYPE = $(PRODUCT_TYPE)"
-	@echo "### BUILD_TYPE = $(BUILD_TYPE)"
-	@echo "### INCLUDES = $(INCLUDES)"
-	@echo "### DEFINES = $(DEFINES)"
-	@echo "### ALL_SRCS = $(ALL_SRCS)"
-	@echo "### ALL_OBJS = $(ALL_OBJS)"
-	@echo "### LIBS = $(LIBS)"
-	@echo "### MODELREF_LIBS = $(MODELREF_LIBS)"
-	@echo "### SYSTEM_LIBS = $(SYSTEM_LIBS)"
-	@echo "### TOOLCHAIN_LIBS = $(TOOLCHAIN_LIBS)"
-	@echo "### CFLAGS = $(CFLAGS)"
-	@echo "### LDFLAGS = $(LDFLAGS)"
-	@echo "### SHAREDLIB_LDFLAGS = $(SHAREDLIB_LDFLAGS)"
-	@echo "### CPPFLAGS = $(CPPFLAGS)"
-	@echo "### CPP_LDFLAGS = $(CPP_LDFLAGS)"
-	@echo "### CPP_SHAREDLIB_LDFLAGS = $(CPP_SHAREDLIB_LDFLAGS)"
-	@echo "### ARFLAGS = $(ARFLAGS)"
-	@echo "### MEX_CFLAGS = $(MEX_CFLAGS)"
-	@echo "### MEX_CPPFLAGS = $(MEX_CPPFLAGS)"
-	@echo "### MEX_LDFLAGS = $(MEX_LDFLAGS)"
-	@echo "### MEX_CPPLDFLAGS = $(MEX_CPPLDFLAGS)"
-	@echo "### DOWNLOAD_FLAGS = $(DOWNLOAD_FLAGS)"
-	@echo "### EXECUTE_FLAGS = $(EXECUTE_FLAGS)"
-	@echo "### MAKE_FLAGS = $(MAKE_FLAGS)"
+	@cmd /C "@echo ### PRODUCT = $(PRODUCT)"
+	@cmd /C "@echo ### PRODUCT_TYPE = $(PRODUCT_TYPE)"
+	@cmd /C "@echo ### BUILD_TYPE = $(BUILD_TYPE)"
+	@cmd /C "@echo ### INCLUDES = $(INCLUDES)"
+	@cmd /C "@echo ### DEFINES = $(DEFINES)"
+	@cmd /C "@echo ### ALL_SRCS = $(ALL_SRCS)"
+	@cmd /C "@echo ### ALL_OBJS = $(ALL_OBJS)"
+	@cmd /C "@echo ### LIBS = $(LIBS)"
+	@cmd /C "@echo ### MODELREF_LIBS = $(MODELREF_LIBS)"
+	@cmd /C "@echo ### SYSTEM_LIBS = $(SYSTEM_LIBS)"
+	@cmd /C "@echo ### TOOLCHAIN_LIBS = $(TOOLCHAIN_LIBS)"
+	@cmd /C "@echo ### CFLAGS = $(CFLAGS)"
+	@cmd /C "@echo ### LDFLAGS = $(LDFLAGS)"
+	@cmd /C "@echo ### SHAREDLIB_LDFLAGS = $(SHAREDLIB_LDFLAGS)"
+	@cmd /C "@echo ### CPPFLAGS = $(CPPFLAGS)"
+	@cmd /C "@echo ### CPP_LDFLAGS = $(CPP_LDFLAGS)"
+	@cmd /C "@echo ### CPP_SHAREDLIB_LDFLAGS = $(CPP_SHAREDLIB_LDFLAGS)"
+	@cmd /C "@echo ### ARFLAGS = $(ARFLAGS)"
+	@cmd /C "@echo ### MEX_CFLAGS = $(MEX_CFLAGS)"
+	@cmd /C "@echo ### MEX_CPPFLAGS = $(MEX_CPPFLAGS)"
+	@cmd /C "@echo ### MEX_LDFLAGS = $(MEX_LDFLAGS)"
+	@cmd /C "@echo ### MEX_CPPLDFLAGS = $(MEX_CPPLDFLAGS)"
+	@cmd /C "@echo ### DOWNLOAD_FLAGS = $(DOWNLOAD_FLAGS)"
+	@cmd /C "@echo ### EXECUTE_FLAGS = $(EXECUTE_FLAGS)"
+	@cmd /C "@echo ### MAKE_FLAGS = $(MAKE_FLAGS)"
 
 
 clean : 
 	$(ECHO) "### Deleting all derived files..."
-	$(RM) $(PRODUCT)
+	@if exist $(PRODUCT) $(RM) $(PRODUCT)
 	$(RM) $(ALL_OBJS)
 	$(ECHO) "### Deleted all derived files."
 
