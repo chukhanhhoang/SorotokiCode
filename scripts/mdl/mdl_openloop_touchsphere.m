@@ -4,7 +4,7 @@ L = 100;  % length of robot
 N = 30;   % number of discrete points on curve
 M = 3;    % number of modes
 H = 1/60; % timesteps
-FPS = 30; % animation speed
+FPS = 60; % animation speed
 
 Modes = [0,M,M,0,0,0];  % pure-XY curvature
 %%
@@ -18,18 +18,18 @@ shp = Shapes(Y,Modes,'L0',L);
 shp.E    = 2.00;     % Young's modulus in Mpa
 shp.Nu   = 0.49;     % Poisson ratio
 shp.Rho  = 1000e-12; % Density in kg/mm^3
-shp.Zeta = 0.1;      % Damping coefficient
+shp.Zeta = 0.15;      % Damping coefficient
 
 shp = shp.rebuild();
 
 %%
-mdl = Model(shp,'Tstep',H,'Tsim',15);
+mdl = Model(shp,'Tstep',H,'Tsim',2);
 
 %% controller
 mdl.tau = @(M) Controller(M);
 
 %%
-mdl.q0(1)   = 0.6;
+mdl.q0(1)   = 0;
 mdl = mdl.simulate(); 
 
 %% 
@@ -39,14 +39,22 @@ colororder(col);
 
 %% animation
 [rig] = setupRig(M,L,Modes);
+% Sphere position, radius
+xs = 30; ys = 0; zs = -20; rs = 10;
+sphere_pos = [xs;ys;zs];
+[X,Y,Z] = sphere();
+X = rs*X+xs;
+Y = rs*Y+ys;
+Z = rs*Z+zs;
 
 for ii = 1:fps(mdl.Log.t,FPS):length(mdl.Log.q)
 
     rig = rig.computeFK(mdl.Log.q(ii,:));
     rig = rig.update();
-    
+    hold on;
+    surf(X,Y,Z);hold on;
     axis([-.5*L .5*L -.5*L .5*L -L 0.1*L]);
-    view(30,30);
+    view(0,0);
     drawnow();
 end
 
@@ -70,25 +78,21 @@ n = size(mdl.Log.q,1);
 t = mdl.Log.t;
 
 % Sphere position, radius
-xs = 1; ys = 1; zs = 1; rs = 0.5;
+xs = 30; ys = 0; zs = -20; rs = 10;
 sphere_pos = [xs;ys;zs];
-stiffness = 10;
+stiffness = -1e-2;
 
 % Init
 tau        = zeros(n,1);
 
 [g,J] = mdl.Shapes.string(mdl.Log.q);
 
-position = zeros(3,mdl.Shapes.NNode);
-for i = 1:size(g,3)
-    position(:,i) = g(1:3,4,i);
-end
+position = reshape(g(1:3,4,:),3,[]);
 
 for i = 1:size(position,2)
-    vector_from_sphere = position-sphere_pos;
+    vector_from_sphere = position(:,i)-sphere_pos;
     if norm(vector_from_sphere) <= rs
-        spatial_force = -stiffness * vector_from_sphere;
-        body_force = Admapinv(g(1:3,4,i)).' * spatial_force;
+        body_force = [zeros(3,1);g(1:3,1:3,i).'*stiffness*(1-1/norm(vector_from_sphere))*vector_from_sphere];
         tau = tau + J(:,:,i).' * body_force;
     end
 end
