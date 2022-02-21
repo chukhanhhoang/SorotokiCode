@@ -44,6 +44,7 @@ Phi0 = eye(3);
 xia0 = Xi0;
 Th   = Theta;
 Ba   = shp.Ba;
+gVec = [0;0;9.81e3];
 Ktt  = shp.Ktt;
 Mtt  = shp.Mtt;
 Zeta = shp.Zeta;
@@ -55,6 +56,7 @@ Zeta = shp.Zeta;
     xia0,...    % intrinsic strain vector
     Th,...      % evaluated Theta matrix
     Ba,...      % state to strain matrix
+    gVec,...    % gravitational acceleration (in mili-g)
     Ktt,...     % geometric stiffness
     Mtt,...     % geometric inertia
     Zeta);      

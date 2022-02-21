@@ -16,6 +16,7 @@ computeLagrangianFast(x,dx,... % states
     xia0,...    % intrinsic strain vector
     Th,...      % evaluated Theta matrix
     Ba,...      % state to strain matrix
+    gVec,...    % gravitational acceleration (in mili-g)
     Ktt,...     % geometric stiffness
     Mtt,...     % geometric inertia
     Zeta);
@@ -37,6 +38,7 @@ computeLagrangianFast_mex(x,dx,... % states
     xia0,...    % intrinsic strain vector
     Th,...      % evaluated Theta matrix
     Ba,...      % state to strain matrix
+    gVec,...    % gravitational acceleration (in mili-g)
     Ktt,...     % geometric stiffness
     Mtt,...     % geometric inertia
     Zeta);
