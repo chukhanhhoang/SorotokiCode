@@ -2,9 +2,9 @@ clr;
 %% 
 L = 100;  % length of robot
 N = 30;   % number of discrete points on curve
-M = 3;    % number of modes
-H = 1/60; % timesteps
-FPS = 60; % animation speed
+M = 5;    % number of modes
+H = 1/150; % timesteps
+FPS = 150; % animation speed
 
 Modes = [0,M,M,0,0,0];  % pure-XY curvature
 %%
@@ -23,10 +23,14 @@ shp.Zeta = 0.15;      % Damping coefficient
 shp = shp.rebuild();
 
 %%
-mdl = Model(shp,'Tstep',H,'Tsim',2);
+mdl = Model(shp,'Tstep',H,'Tsim',10);
+
+% Sphere position, radius
+xs = 30; ys = 7; zs = -25; rs = 15;
+sphere_pos = [xs;ys;zs];
 
 %% controller
-mdl.tau = @(M) Controller(M);
+mdl.tau = @(M) Controller(M,sphere_pos,rs);
 
 %%
 mdl.q0(1)   = 0;
@@ -39,9 +43,7 @@ colororder(col);
 
 %% animation
 [rig] = setupRig(M,L,Modes);
-% Sphere position, radius
-xs = 30; ys = 0; zs = -20; rs = 10;
-sphere_pos = [xs;ys;zs];
+
 [X,Y,Z] = sphere();
 X = rs*X+xs;
 Y = rs*Y+ys;
@@ -73,14 +75,14 @@ Y = gsogpoly(Y,X);
 end
 
 %% setup controller
-function tau = Controller(mdl)
+function tau = Controller(mdl,sphere_pos,rs)
 n = size(mdl.Log.q,1);
 t = mdl.Log.t;
 
-% Sphere position, radius
-xs = 30; ys = 0; zs = -20; rs = 10;
-sphere_pos = [xs;ys;zs];
-stiffness = -1e-2;
+% % Sphere position, radius
+% xs = 30; ys = 0; zs = -20; rs = 10;
+% sphere_pos = [xs;ys;zs];
+stiffness = 1e-2;
 
 % Init
 tau        = zeros(n,1);
