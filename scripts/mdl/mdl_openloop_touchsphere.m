@@ -1,10 +1,10 @@
 clr; 
 %% 
 L = 100;  % length of robot
-N = 30;   % number of discrete points on curve
+N = 50;   % number of discrete points on curve
 M = 5;    % number of modes
-H = 1/150; % timesteps
-FPS = 150; % animation speed
+H = 1/125; % timesteps
+FPS = 125; % animation speed
 
 Modes = [0,M,M,0,0,0];  % pure-XY curvature
 %%
@@ -27,7 +27,7 @@ mdl = Model(shp,'Tstep',H,'Tsim',10);
 mdl.gVec = [0;0;-9.81e3];
 
 % Sphere position, radius
-xs = 30; ys = 7; zs = -25; rs = 15;
+xs = 30; ys = 7; zs = -45; rs = 15;
 sphere_pos = [xs;ys;zs];
 
 %% controller
@@ -55,9 +55,8 @@ for ii = 1:fps(mdl.Log.t,FPS):length(mdl.Log.q)
     rig = rig.computeFK(mdl.Log.q(ii,:));
     rig = rig.update();
     hold on;
-    surf(X,Y,Z);hold on;
+    surf(-Z,Y,-X);hold on;
     axis([-.5*L .5*L -.5*L .5*L -L 0.1*L]);
-    view(0,0);
     drawnow();
 end
 
@@ -128,3 +127,20 @@ rig.g0 = SE3(roty(-pi),zeros(3,1));
 rig = rig.render();
 end
 
+function plotAxes(hAx)
+    axis(hAx,'equal')
+    %Get X, Y and Z data for plotting the axes...
+    X_range = hAx.XLim(2) - hAx.XLim(1);
+    X_start = hAx.XLim(1);
+    X_delta = X_range/20;
+    Y_delta = (hAx.YLim(2) - hAx.YLim(1))/20;
+    Y_start = hAx.YLim(1);
+    Z_delta = (hAx.ZLim(2) - hAx.ZLim(1))/20;
+    Z_start = hAx.ZLim(1);
+    X_Line = line(hAx,[X_start+X_delta X_start+X_delta*5],[Y_start+Y_delta Y_start+Y_delta],[Z_start+Z_delta Z_start+Z_delta]); % x Line
+    Y_Line = line(hAx,[X_start+X_delta X_start+X_delta],[Y_start+Y_delta Y_start+Y_delta*5],[Z_start+Z_delta Z_start+Z_delta]); % Y Line
+    Z_Line = line(hAx,[X_start+X_delta X_start+X_delta],[Y_start+Y_delta Y_start+Y_delta],[Z_start+Z_delta Z_start+Z_delta*5]); %Z Line
+    X_text = text(hAx,X_start+X_delta*6,Y_start+Y_delta,Z_start+Z_delta,'x');
+    Y_text = text(hAx,X_start+X_delta,Y_start+Y_delta*6,Z_start+Z_delta,'y');
+    Z_text = text(hAx,X_start+X_delta,Y_start+Y_delta,Z_start+Z_delta*6,'z');
+end
