@@ -226,8 +226,7 @@ for ii = 1:length(Node0)
     V(ii,:) = reshape(H(1:3,4),1,3);
 end
 
-mesh.Node = V;
-
+mesh.Node = ([0 0 -1;0 1 0;-1 0 0]*V.').';
 end
 %---------------------------------------------------------------- CURL MESH
 function mesh = CurveMesh(mesh,Arg)

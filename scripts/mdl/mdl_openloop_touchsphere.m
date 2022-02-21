@@ -55,8 +55,9 @@ for ii = 1:fps(mdl.Log.t,FPS):length(mdl.Log.q)
     rig = rig.computeFK(mdl.Log.q(ii,:));
     rig = rig.update();
     hold on;
-    surf(-Z,Y,-X);hold on;
+    surf(X,Y,Z);hold on;
     axis([-.5*L .5*L -.5*L .5*L -L 0.1*L]);
+    view(0,20)
     drawnow();
 end
 
@@ -82,7 +83,7 @@ t = mdl.Log.t;
 % % Sphere position, radius
 % xs = 30; ys = 0; zs = -20; rs = 10;
 % sphere_pos = [xs;ys;zs];
-stiffness = 1e-2;
+stiffness = 1e-3;
 
 % Init
 tau        = zeros(n,1);
