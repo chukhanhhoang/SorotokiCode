@@ -14,6 +14,7 @@
 classdef Mesh
 
     properties (Access = public)
+        Sdf_eps;
         SDF;
         BdBox;
         Node;
@@ -153,6 +154,7 @@ function obj = Mesh(Input,varargin)
        obj.NElem = 200;
        
     elseif isa(Input,'Sdf')
+       obj.Sdf_eps = Input.eps;
        obj.SDF = @(x) Input.eval(x);
        obj.NElem = 200;
        if ~isempty(Input.BdBox)
@@ -551,6 +553,14 @@ function BndList = ConstructBounds(Mesh)
            
     end
     
+end
+
+function N = computeN(Mesh,x)
+    d = Mesh.SDF(x);
+    n1 = (Mesh.SDF(x+repmat([Mesh.eps,0,0],size(x,1),1))-d)/Mesh.eps;
+    n2 = (Mesh.SDF(x+repmat([0,Mesh.eps,0],size(x,1),1))-d)/Mesh.eps;
+    n3 = (Mesh.SDF(x+repmat([0,0,Mesh.eps],size(x,1),1))-d)/Mesh.eps;
+    N = diag(d(:,end))*[n1(:,end),n2(:,end),n3(:,end)];
 end
 %-------------------------------------------------------------- END METHODS
 end
