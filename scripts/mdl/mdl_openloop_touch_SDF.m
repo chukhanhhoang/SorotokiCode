@@ -27,11 +27,12 @@ mdl = Model(shp,'Tstep',H,'Tsim',10);
 mdl.gVec = [0;0;-9.81e3];
 
 % Sphere position, radius
-xs = 30; ys = 7; zs = -45; rs = 20;
-% sphere = sSphere(xs,ys,zs,rs); % sphere
-sphere = sCube(xs-rs,xs+rs,ys-rs,ys+rs,zs-rs,zs+rs); % cube centered at xs,ys,zs
-msh = Mesh(sphere,'NElem',1e3);
-sphere_gmodel = Gmodel(sphere);
+xs = 30; ys = 7; zs = -65; rs = 20;
+sphere = sSphere(xs,ys,zs+rs,rs); % sphere
+cube = sCube(xs-rs,xs+rs,ys-rs,ys+rs,zs-rs,zs+rs); % cube centered at xs,ys,zs
+sdf = sphere + cube;
+msh = Mesh(sdf,'NElem',1e3);
+sphere_gmodel = Gmodel(sdf);
 
 %% controller
 mdl.tau = @(M) Controller(M,msh);
