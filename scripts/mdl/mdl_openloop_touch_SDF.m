@@ -3,8 +3,8 @@ clr;
 L = 100;  % length of robot
 N = 50;   % number of discrete points on curve
 M = 5;    % number of modes
-H = 1/125; % timesteps
-FPS = 125; % animation speed
+H = 1/250; % timesteps
+FPS = 250; % animation speed
 
 Modes = [0,M,M,0,0,0];  % pure-XY curvature
 %%
@@ -27,8 +27,8 @@ mdl = Model(shp,'Tstep',H,'Tsim',10);
 mdl.gVec = [0;0;-9.81e3];
 
 % Sphere position, radius
-xs = 30; ys = 7; zs = -65; rs = 20;
-sphere = sSphere(xs,ys,zs+rs,rs); % sphere
+xs = 10; ys = 7; zs = -65; rs = 20;
+sphere = sSphere(xs+rs,ys,zs+rs,rs); % sphere
 cube = sCube(xs-rs,xs+rs,ys-rs,ys+rs,zs-rs,zs+rs); % cube centered at xs,ys,zs
 sdf = sphere + cube;
 msh = Mesh(sdf,'NElem',1e3);
@@ -84,8 +84,8 @@ t = mdl.Log.t;
 % % Sphere position, radius
 % xs = 30; ys = 0; zs = -20; rs = 10;
 % sphere_pos = [xs;ys;zs];
-stiffness = -1e-2;
-damping = 0e-4;
+stiffness = 5e-3;
+damping_base = 1e-4;
 % Init
 tau        = zeros(n,1);
 
@@ -99,7 +99,11 @@ for i = 1:size(position,2)
     if dist(i) <= 0
         body_velo = J(:,:,i)*mdl.Log.dq;
         spatial_velo = Admap(g(1:3,1:3,i),g(1:3,4,i))*body_velo;
-        body_force = [zeros(3,1);g(1:3,1:3,i).'*(stiffness*N(i,:).'+damping*spatial_velo(4:end))];
+        dd = spatial_velo(4:6).'*N(i,:).';
+        spatial_damping_force = damping_base*((-dist(i))^1.1)*dd*N(i,:).';
+        spatial_stiffness_force=(-dist(i))*stiffness*N(i,:).';
+        
+        body_force = [zeros(3,1);g(1:3,1:3,i).'*(spatial_stiffness_force+spatial_damping_force)];
         tau = tau + J(:,:,i).' * body_force;
     end
 end

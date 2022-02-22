@@ -562,7 +562,7 @@ function [N,dist] = computeN(Mesh,x)
     n3 = (Mesh.SDF(x+repmat([0,0,Mesh.eps],size(x,1),1))-d)/Mesh.eps;
     
     dist = d(:,end);
-    N = diag(dist)*[n1(:,end),n2(:,end),n3(:,end)];
+    N = [n1(:,end),n2(:,end),n3(:,end)];
 end
 %-------------------------------------------------------------- END METHODS
 end
