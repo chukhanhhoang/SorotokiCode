@@ -57,7 +57,7 @@ for ii = 1:fps(mdl.Log.t,FPS):length(mdl.Log.q)
     hold on;
     surf(X,Y,Z);hold on;
     axis([-.5*L .5*L -.5*L .5*L -L 0.1*L]);
-    view(0,20)
+    view(45,-15)
     drawnow();
 end
 
@@ -84,18 +84,21 @@ t = mdl.Log.t;
 % xs = 30; ys = 0; zs = -20; rs = 10;
 % sphere_pos = [xs;ys;zs];
 stiffness = 1e-3;
-
+damping = 1e-4;
 % Init
 tau        = zeros(n,1);
 
 [g,J] = mdl.Shapes.string(mdl.Log.q);
+
 
 position = reshape(g(1:3,4,:),3,[]);
 
 for i = 1:size(position,2)
     vector_from_sphere = position(:,i)-sphere_pos;
     if norm(vector_from_sphere) <= rs
-        body_force = [zeros(3,1);g(1:3,1:3,i).'*stiffness*(1-1/norm(vector_from_sphere))*vector_from_sphere];
+        body_velo = J(:,:,i)*mdl.Log.dq;
+        spatial_velo = Admap(g(1:3,1:3,i),g(1:3,4,i))*body_velo;
+        body_force = [zeros(3,1);g(1:3,1:3,i).'*(stiffness*(1-1/norm(vector_from_sphere))*vector_from_sphere+damping*spatial_velo(4:end))];
         tau = tau + J(:,:,i).' * body_force;
     end
 end
