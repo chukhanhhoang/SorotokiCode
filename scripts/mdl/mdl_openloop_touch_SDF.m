@@ -49,14 +49,12 @@ colororder(col);
 %% animation
 sphere_gmodel.bake()
 [rig] = setupRig(M,L,Modes);
-
+hold on;
+sphere_gmodel.render();
 
 for ii = 1:fps(mdl.Log.t,FPS):length(mdl.Log.q)
-
     rig = rig.computeFK(mdl.Log.q(ii,:));
     rig = rig.update();
-    hold on;
-    sphere_gmodel.render();
     axis([-.5*L .5*L -.5*L .5*L -L 0.1*L]);
     view(45,-15)
     drawnow();
@@ -84,7 +82,7 @@ t = mdl.Log.t;
 % % Sphere position, radius
 % xs = 30; ys = 0; zs = -20; rs = 10;
 % sphere_pos = [xs;ys;zs];
-stiffness = 5e-3;
+stiffness = 2e-3;
 damping_base = 2e-5;
 % Init
 tau        = zeros(n,1);
