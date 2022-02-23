@@ -1,7 +1,7 @@
 clr; 
 %% 
 L = 100;  % length of robot
-N = 50;   % number of discrete points on curve
+N = 100;   % number of discrete points on curve
 M = 5;    % number of modes
 H = 1/125; % timesteps
 FPS = 125; % animation speed
@@ -31,11 +31,11 @@ xs = 10; ys = 7; zs = -65; rs = 20;
 sphere = sSphere(xs+rs,ys,zs+rs,rs); % sphere
 cube = sCube(xs-rs,xs+rs,ys-rs,ys+rs,zs-rs,zs+rs); % cube centered at xs,ys,zs
 sdf = sphere + cube;
-msh = Mesh(sdf,'NElem',1e3);
+% msh = Mesh(sdf,'NElem',1e3);
 sphere_gmodel = Gmodel(sdf);
 
 %% controller
-mdl.tau = @(M) Controller(M,msh);
+mdl.tau = @(M) Controller(M,sdf);
 
 %%
 mdl.q0(1)   = 0;
@@ -47,19 +47,24 @@ plot(mdl.Log.t,mdl.Log.q(:,1:M),'LineW',2);
 colororder(col);
 
 %% animation
-sphere_gmodel.bake()
-[rig] = setupRig(M,L,Modes);
-hold on;
-sphere_gmodel.render();
+
+%[rig] = setupRig(M,L,Modes);
+figure
+
+sphere_gmodel.bake.render();hold on;
 
 for ii = 1:fps(mdl.Log.t,FPS):length(mdl.Log.q)
-    rig = rig.computeFK(mdl.Log.q(ii,:));
-    rig = rig.update();
+    %rig = rig.computeFK(mdl.Log.q(ii,:));
+    %rig = rig.update();
+    p = shp.FK(mdl.Log.q(ii,:));
+    %g = shp.string(mdl.Log.q(ii,:));
+    h = plot3(p(:,1),p(:,2),p(:,3),'LineW',3,'Color',col(1));
     axis([-.5*L .5*L -.5*L .5*L -L 0.1*L]);
     view(45,-15)
     drawnow();
+    delete(h)
 end
-
+h = plot3(p(:,1),p(:,2),p(:,3),'LineW',3,'Color',col(1));
 
 %%
 function Y = GenerateFunctionSpace(X,N,M,L)
@@ -75,14 +80,14 @@ Y = gsogpoly(Y,X);
 end
 
 %% setup controller
-function tau = Controller(mdl,obj_mesh)
+function tau = Controller(mdl,obj)
 n = size(mdl.Log.q,1);
 t = mdl.Log.t;
 
 % % Sphere position, radius
 % xs = 30; ys = 0; zs = -20; rs = 10;
 % sphere_pos = [xs;ys;zs];
-stiffness = 2e-3;
+stiffness = 2e-4;
 damping_base = 2e-5;
 % Init
 tau        = zeros(n,1);
@@ -91,7 +96,7 @@ tau        = zeros(n,1);
 
 
 position = reshape(g(1:3,4,:),3,[]);
-[N,dist] = obj_mesh.computeN(position.');
+[T,N,B,Z,dist] = obj.normal(position.');
 
 for i = 1:size(position,2)
     if dist(i) <= 0
@@ -100,7 +105,7 @@ for i = 1:size(position,2)
         spatial_velo = isomse3(spatial_velo_twist)*[g(1:3,4,i);0];
         dd = N(i,:)*spatial_velo(1:3);
         spatial_damping_force = -damping_base*((-dist(i))^1.1)*dd*N(i,:).';
-        spatial_stiffness_force=(-dist(i))*stiffness*N(i,:).';
+        spatial_stiffness_force=(-dist(i)^3)*stiffness*N(i,:).';
         
         body_force = [zeros(3,1);g(1:3,1:3,i).'*(spatial_stiffness_force+spatial_damping_force)];
         tau = tau + J(:,:,i).' * body_force;
