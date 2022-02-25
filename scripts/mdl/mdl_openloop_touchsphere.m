@@ -1,4 +1,4 @@
-clr; 
+ clr; 
 %% 
 L = 100;  % length of robot
 N = 50;   % number of discrete points on curve
@@ -6,7 +6,7 @@ M = 5;    % number of modes
 H = 1/125; % timesteps
 FPS = 125; % animation speed
 
-Modes = [0,M,M,0,0,0];  % pure-XY curvature
+Modes = [0,M,0,0,0,0];  % pure-XY curvature
 %%
 % generate nodal space
 X = linspace(0,L,N)';
@@ -27,7 +27,7 @@ mdl = Model(shp,'Tstep',H,'Tsim',10);
 mdl.gVec = [0;0;-9.81e3];
 
 % Sphere position, radius
-xs = 30; ys = 7; zs = -45; rs = 15;
+xs = 30; ys = 0; zs = -45; rs = 15;
 sphere_pos = [xs;ys;zs];
 
 %% controller
