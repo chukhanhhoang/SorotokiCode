@@ -1,10 +1,10 @@
 clr; 
 %% 
 L = 100;  % length of robot
-N = 100;   % number of discrete points on curve
+N = 30;   % number of discrete points on curve
 M = 5;    % number of modes
 H = 1/125; % timesteps
-FPS = 125; % animation speed
+FPS = 25; % animation speed
 
 Modes = [0,M,0,0,0,0];  % pure-XY curvature
 %%
@@ -27,7 +27,7 @@ mdl = Model(shp,'Tstep',H,'Tsim',10);
 mdl.gVec = [0;0;-9.81e3];
 
 % Sphere position, radius
-xs = 10; ys = 0; zs = -65; rs = 20;
+xs = 20; ys = 0; zs = -45; rs = 20;
 sphere = sSphere(xs,ys,zs,rs); % sphere
 sphere_gmodel = Gmodel(sphere);
 
@@ -83,11 +83,11 @@ t = mdl.Log.t;
 
 
 % Hunt-crossley param
-stiffness = 2e-4;
-damping_base = 2e-5;
+stiffness = 3e-4;
+damping_base = 1e-7;
 
 % spikes pos wrt backbone
-spike = [eye(3) [0;0;-5]; zeros(1,3) 1];
+spike = [eye(3) [0;0;-3]; zeros(1,3) 1];
 
 % Init
 tau        = zeros(n,1);
@@ -103,16 +103,17 @@ for i = 1:size(positionBackbone,2)
     pA = positionBackbone([1,3],i);
     pB = positionSpike([1,3],i);
     [s,pContact] = ComputeIntersection(pA.',pB.',pC,rC);
-    if s
+    if s && ~isempty(pContact)
+        depth = norm(pB-pContact);
         vContactBB = pA - pContact;
-        unitVec = vContactBB/norm(vContact); % unit vector pointing from contact to backbone
+        unitVec = -vContactBB/norm(vContactBB); % unit vector pointing from contact to backbone
         unitVec = [unitVec(1);0;unitVec(2)]; % Make it 3D
         body_velo_twist = J(:,:,i)*mdl.Log.dq;
         spatial_velo_twist = Admap(g(1:3,1:3,i),g(1:3,4,i))*body_velo_twist;
         spatial_velo = isomse3(spatial_velo_twist)*[g(1:3,4,i);0];
         dd = spatial_velo(1:3).'*unitVec ; % velocity on the spike direction
-        spatial_damping_force = -damping_base*((-dist(i))^1.1)*dd*unitVec;
-        spatial_stiffness_force=(-dist(i)^3)*stiffness*unitVec;
+        spatial_damping_force = damping_base*(depth^1.1)*dd*unitVec;
+        spatial_stiffness_force=(depth)*stiffness*unitVec;
         
         body_force = [zeros(3,1);g(1:3,1:3,i).'*(spatial_stiffness_force+spatial_damping_force)];
         tau = tau + J(:,:,i).' * body_force;
@@ -169,7 +170,8 @@ function [flag, points] = ComputeIntersection(pA,pB,pC,rC)
     % project C onto AB
     vAB = pB-pA;
     points = [];
-    Cproj = ProjectionOnLine([pA; pB],pC);
+    flag = 0;
+    Cproj = ProjectionOnLine([pA; pB],pC).';
     d = norm(pC-Cproj);
     if d > rC
         flag = 0; return
@@ -182,11 +184,11 @@ function [flag, points] = ComputeIntersection(pA,pB,pC,rC)
         else
             point1 = Cproj + tmp*uAB;
             point2 = Cproj - tmp*uAB;
-            if dot(point1-pA,vAB) > 0
+            if dot(point1-pA,point1-pB) < 0
                 points = [points,point1];
                 flag = 1;
             end
-            if dot(point2-pA,vAB) > 0
+            if dot(point2-pA,point2-pB) < 0
                 points = [points,point2];
                 flag = 1;
             end
