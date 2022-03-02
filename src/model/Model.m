@@ -228,6 +228,9 @@ for ii = 1:length(Ts)-1
             dR = w_ - z - 0.5*h*(f1 + f2);
         end
         
+        % update Control Jacobian
+        [Model.dTaudq,Model.dTauddq] = updateControlJacobians(Model);
+        
         % compute hessian
         H = buildHessian(Model,Mi);
         
@@ -626,6 +629,54 @@ for ii = 1:n
     Dt(:,ii) = (Tau_ - Tau0)/epsilon;
 end
 
+end
+
+function [Kt, Dt] = updateControlJacobians(Model)
+    % overwrite dynamics
+if ~isempty(Model.q)
+    Q0 = Model.q ; 
+    dQ0= Model.dq;
+else
+    Q0 = Model.q0(:) ; 
+    dQ0= Model.dq0(:);
+end
+n   = length(Model.q0);
+% Model.Log.EL.M  = M_; 
+% Model.Log.EL.C  = C_; 
+% Model.Log.EL.R  = R_; 
+% Model.Log.EL.G  = G_; 
+% Model.Log.EL.K  = K_; 
+% Model.Log.EL.J  = J_;
+% 
+% Model.Log.p   = p_; 
+% Model.Log.Phi = Phi_; 
+% 
+% Model.t  = 0;
+
+epsilon = 1e-3;
+delta   = epsilon*eye(n);
+
+Tau0 = Model.tau(Model);
+
+Kt = zeros(n);
+Dt = zeros(n);
+
+% finite difference for tau(q(t),.)
+for ii = 1:n
+    Model.q = Q0 + delta(:,ii);
+    Tau_ = Model.tau(Model);
+    Kt(:,ii) = (Tau_ - Tau0)/epsilon;
+end
+
+Model.q  = Q0;
+
+% finite difference for tau(q(t),.)
+for ii = 1:n
+    Model.dq = dQ0 + delta(:,ii);
+    Tau_ = Model.tau(Model);
+    Dt(:,ii) = (Tau_ - Tau0)/epsilon;
+end
+Model.dq = dQ0;
 end
 
 end

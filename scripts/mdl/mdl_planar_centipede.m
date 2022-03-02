@@ -3,8 +3,8 @@ clr;
 L = 100;  % length of robot
 N = 30;   % number of discrete points on curve
 M = 5;    % number of modes
-H = 1/250; % timesteps
-FPS = 125; % animation speed
+H = 1/125; % timesteps
+FPS = 25; % animation speed
 
 Modes = [0,M,0,0,0,0];  % pure-XY curvature
 %%
