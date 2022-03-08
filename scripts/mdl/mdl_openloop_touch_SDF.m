@@ -23,7 +23,7 @@ shp.Zeta = 0.15;      % Damping coefficient
 shp = shp.rebuild();
 
 %% Init model
-mdl = Model(shp,'Tstep',H,'Tsim',10);
+mdl = Model(shp,'Tstep',H,'Tsim',1);
 mdl.gVec = [0;0;-9.81e3];
 
 % Sphere position, radius

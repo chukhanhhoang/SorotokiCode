@@ -1,13 +1,14 @@
 clr; 
 %% 
 L = 100;  % length of robot
-N = 30;   % number of discrete points on curve
+N = 50;   % number of discrete points on curve
 M = 3;    % number of modes
-H = 1/60; % timesteps
+H = 1/125; % timesteps
 FPS = 30; % animation speed
 
 Modes = [0,M,M,0,0,0];  % pure-XY curvature
 %%
+
 % generate nodal space
 X = linspace(0,L,N)';
 Y = GenerateFunctionSpace(X,N,M,L);
@@ -22,11 +23,15 @@ shp.Zeta = 0.1;      % Damping coefficient
 
 shp = shp.rebuild();
 
-%%
-mdl = Model(shp,'Tstep',H,'Tsim',15);
+%% find final config
+qd = [-0.3;-0.2;-0.1;0.05;-0.02;0.01];
+p = shp.FK(qd);
 
+%%
+mdl = Model(shp,'Tstep',H,'Tsim',5);
+mdl.gVec = [0;0;-9.81e3];
 %% controller
-mdl.tau = @(M) Controller(M);
+mdl.tau = @(M) Controller(M,qd);
 
 %%
 mdl.q0(1)   = 0.0;
@@ -38,13 +43,16 @@ plot(mdl.Log.t,mdl.Log.q(:,1:M),'LineW',2);
 colororder(col);
 
 %% animation
+figure;
+% hold on;
 [rig] = setupRig(M,L,Modes);
 
 for ii = 1:fps(mdl.Log.t,FPS):length(mdl.Log.q)
 
     rig = rig.computeFK(mdl.Log.q(ii,:));
     rig = rig.update();
-    
+    hold on;
+    plot3(p(:,1),p(:,2),p(:,3),'LineW',3,'Color',col(1));
     axis([-.5*L .5*L -.5*L .5*L -L 0.1*L]);
     view(30,30);
     drawnow();
@@ -64,16 +72,15 @@ Y = gsogpoly(Y,X);
 end
 
 %% setup controller
-function tau = Controller(mdl)
+function tau = Controller(mdl,qd)
+    n = numel(mdl.Log.q);
+    t = mdl.Log.t;
+    % 
+    %tau        = zeros(n,1);
 
-
-
-n = numel(mdl.Log.q);
-t = mdl.Log.t;
-% 
-tau        = zeros(n,1);
-% tau(1)     = 9*smoothstep(t)*sin(3*t);
-% tau(n/2+1) = 9*smoothstep(t)*cos(t);
+    dV_dq = mdl.Log.EL.G + mdl.Log.EL.K*mdl.Log.q;
+    dVd_dq = mdl.Log.EL.K*(mdl.Log.q-qd);
+    tau = dV_dq-dVd_dq-4*mdl.Log.EL.M*mdl.Log.dq;
 end
 
 %% setup rig
