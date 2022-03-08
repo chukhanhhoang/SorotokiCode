@@ -4,7 +4,7 @@ L = 100;  % length of robot
 N = 30;   % number of discrete points on curve
 M = 5;    % number of modes
 H = 1/125; % timesteps
-FPS = 25; % animation speed
+FPS = 125; % animation speed
 
 Modes = [0,M,0,0,0,0];  % pure-XY curvature
 %%
@@ -23,11 +23,11 @@ shp.Zeta = 0.15;      % Damping coefficient
 shp = shp.rebuild();
 
 %% Init model
-mdl = Model(shp,'Tstep',H,'Tsim',10);
+mdl = Model(shp,'Tstep',H,'Tsim',3);
 mdl.gVec = [0;0;-9.81e3];
 
 % Sphere position, radius
-xs = 20; ys = 0; zs = -45; rs = 20;
+xs = 15; ys = 0; zs = -45; rs = 20;
 sphere = sSphere(xs,ys,zs,rs); % sphere
 sphere_gmodel = Gmodel(sphere);
 
@@ -49,7 +49,7 @@ colororder(col);
 figure
 
 sphere_gmodel.bake.render();hold on;
-
+gif('centipede.gif')
 for ii = 1:fps(mdl.Log.t,FPS):length(mdl.Log.q)
     %rig = rig.computeFK(mdl.Log.q(ii,:));
     %rig = rig.update();
@@ -59,6 +59,7 @@ for ii = 1:fps(mdl.Log.t,FPS):length(mdl.Log.q)
     axis([-.5*L .5*L -.5*L .5*L -L 0.1*L]);
     view(45,-15)
     drawnow();
+    gif
     delete(h)
 end
 h = plot3(p(:,1),p(:,2),p(:,3),'LineW',3,'Color',col(1));
@@ -83,7 +84,7 @@ t = mdl.Log.t;
 
 
 % Hunt-crossley param
-stiffness = 3e-4;
+stiffness = 5e-4;
 damping_base = 2e-7;
 
 % spikes pos wrt backbone
@@ -92,51 +93,31 @@ spike = [eye(3) [0;0;-5]; zeros(1,3) 1];
 % Init
 tau        = zeros(n,1);
 
-[g,J] = mdl.Shapes.string(mdl.Log.q);
-
-spikes = pagemtimes(g,spike);
-
+[g,J] = mdl.Shapes.string(mdl.Log.q); % compute g and Jacobian
+spikes = pagemtimes(g,spike); % compute position & orientation of the spikes
 positionBackbone = reshape(g(1:3,4,:),3,[]);
 positionSpike = reshape(spikes(1:3,4,:),3,[]);
 
 for i = 1:size(positionBackbone,2)
-    pA = positionBackbone([1,3],i);
-    pB = positionSpike([1,3],i);
-    [s,pContact] = ComputeIntersection(pA.',pB.',pC,rC);
+    pA = positionBackbone([1,3],i); % Point A on the backbone
+    pB = positionSpike([1,3],i); % Point B is the tip of the spike
+    [s,pContact] = ComputeIntersection(pA.',pB.',pC,rC); % compute point of contact
     if s && ~isempty(pContact)
-        depth = norm(pB-pContact);
-        vContactBB = pA - pContact;
+        depth = norm(pB-pContact); % penetration level (x)
+        vContactBB = pA - pContact; % vector AB (backbone -> spike)
         unitVec = -vContactBB/norm(vContactBB); % unit vector pointing from contact to backbone
         unitVec = [unitVec(1);0;unitVec(2)]; % Make it 3D
         body_velo_twist = J(:,:,i)*mdl.Log.dq;
         spatial_velo_twist = Admap(g(1:3,1:3,i),g(1:3,4,i))*body_velo_twist;
-        spatial_velo = isomse3(spatial_velo_twist)*[spikes(1:3,4,i);0];
-        dd = spatial_velo(1:3).'*unitVec ; % velocity on the spike direction
+        spatial_velo = isomse3(spatial_velo_twist)*[spikes(1:3,4,i);0]; % spatial velocity of the spike tip
+        dd = spatial_velo(1:3).'*unitVec ; % velocity (xdot)
         spatial_damping_force = -damping_base*(depth^1.1)*dd*unitVec;
         spatial_stiffness_force=(depth)*stiffness*unitVec;
-        
-        body_force = [zeros(3,1);spikes(1:3,1:3,i).'*(spatial_stiffness_force+spatial_damping_force)];
+        body_force = [zeros(3,1);spikes(1:3,1:3,i).'*...
+            (spatial_stiffness_force+spatial_damping_force)];
         tau = tau + J(:,:,i).' * body_force;
     end
 end
-
-
-
-% for i = 1:size(position,2)
-%     if dist(i) <= 0
-%         body_velo_twist = J(:,:,i)*mdl.Log.dq;
-%         spatial_velo_twist = Admap(g(1:3,1:3,i),g(1:3,4,i))*body_velo_twist;
-%         spatial_velo = isomse3(spatial_velo_twist)*[g(1:3,4,i);0];
-%         dd = N(i,:)*spatial_velo(1:3);
-%         spatial_damping_force = -damping_base*((-dist(i))^1.1)*dd*N(i,:).';
-%         spatial_stiffness_force=(-dist(i)^3)*stiffness*N(i,:).';
-%         
-%         body_force = [zeros(3,1);g(1:3,1:3,i).'*(spatial_stiffness_force+spatial_damping_force)];
-%         tau = tau + J(:,:,i).' * body_force;
-%     end
-% end
-% tau(1)     = 9*smoothstep(t)*sin(3*t);
-% tau(n/2+1) = 9*smoothstep(t)*cos(t);
 end
 
 %% setup rig

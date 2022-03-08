@@ -27,7 +27,7 @@ MEXFUNCTION_LINKAGE void mexFunction(int32_T nlhs, mxArray *plhs[],
 
 emlrtCTX mexFunctionCreateRootTLS(void);
 
-void unsafe_computeLagrangianFast_mexFunction(int32_T nlhs, mxArray *plhs[10],
+void unsafe_computeLagrangianFast_mexFunction(int32_T nlhs, mxArray *plhs[12],
                                               int32_T nrhs,
                                               const mxArray *prhs[12]);
 

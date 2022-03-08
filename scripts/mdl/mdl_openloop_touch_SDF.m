@@ -52,7 +52,7 @@ colororder(col);
 figure
 
 sphere_gmodel.bake.render();hold on;
-
+gif('viscous_environment.gif')
 for ii = 1:fps(mdl.Log.t,FPS):length(mdl.Log.q)
     %rig = rig.computeFK(mdl.Log.q(ii,:));
     %rig = rig.update();
@@ -62,6 +62,7 @@ for ii = 1:fps(mdl.Log.t,FPS):length(mdl.Log.q)
     axis([-.5*L .5*L -.5*L .5*L -L 0.1*L]);
     view(45,-15)
     drawnow();
+    gif
     delete(h)
 end
 h = plot3(p(:,1),p(:,2),p(:,3),'LineW',3,'Color',col(1));
@@ -105,7 +106,7 @@ for i = 1:size(position,2)
         spatial_velo = isomse3(spatial_velo_twist)*[g(1:3,4,i);0];
         dd = N(i,:)*spatial_velo(1:3);
         spatial_damping_force = -damping_base*((-dist(i))^1.1)*dd*N(i,:).';
-        spatial_stiffness_force=(-dist(i)^3)*stiffness*N(i,:).';
+        spatial_stiffness_force=(-dist(i))*stiffness*N(i,:).';
         
         body_force = [zeros(3,1);g(1:3,1:3,i).'*(spatial_stiffness_force+spatial_damping_force)];
         tau = tau + J(:,:,i).' * body_force;

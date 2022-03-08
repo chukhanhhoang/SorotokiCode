@@ -24,6 +24,7 @@ shp = shp.rebuild();
 
 %%
 mdl = Model(shp,'Tstep',H,'Tsim',15);
+mdl.gVec = [0;0;-9.81e3];
 
 %% controller
 mdl.tau = @(M) Controller(M);

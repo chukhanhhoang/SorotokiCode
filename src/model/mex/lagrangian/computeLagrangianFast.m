@@ -1,5 +1,5 @@
 %#codegen
-function [M,C,K,R,G,p,Phi,J,Vg,Kin] = computeLagrangianFast(x,dx,... % states
+function [M,C,K,R,G,p,Phi,J,Vg,Kin,Jt,Mt] = computeLagrangianFast(x,dx,... % states
     ds,...      % spatial steps
     p0,...      % position zero
     Phi0,...    % phi zero
@@ -16,7 +16,7 @@ n    = numel(x);
 s    = 0;
 
 Z1 = zeros(6,6+2*(n-1));
-Z2 = zeros(n,3*n+1);
+Z2 = zeros(n,4*n+1);
 Z1(1:3,1:3) = Phi0;
 Z1(1:3,4)   = p0;
 
@@ -42,14 +42,17 @@ end
 % recover the kinematics entities
 p   = Z1(1:3,4);
 Phi = Z1(1:3,1:3);
+tmp = Admapinv(Phi,p);
 B1  = Z1(1:6,5:5+n-1);
-J   = Admapinv(Phi,p)*B1;
-
+B2  = Z1(1:6,6+n-1:6+2*(n-1));
+J   = tmp*B1;
+Jt  = tmp*B2;
 % recover the dynamics entities
 M  = Z2(1:n,1:n);
 C  = Z2(1:n,n+1:2*n);
 K  = Z2(1:n,2*n+1:3*n);
-G  = Z2(1:n,3*n+1);
+Mt = Z2(1:n,3*n+1:4*n);
+G  = Z2(1:n,4*n+1);
 
 Vg  = Z1(5,4);
 Kin = Z1(6,4);
@@ -95,6 +98,7 @@ dJt = A*adV*BTh;
 dM = (Jg).'*Mtt*Jg;
 dC = (Jg).'*((Mtt*adV - adV.'*Mtt)*Jg  + Mtt*Jgt);
 dG = (Jg).'*(Ai*Mtt*[0;0;0;-gVec]);
+dMt= Jgt.'*Mtt*Jg + Jg.'*Mtt*Jgt;
 
 % compute (nonlinear stiffness)
 dK = (BTh).'*Ktt*(BTh);
@@ -113,11 +117,12 @@ dZ1(1:6,6+n-1:6+2*(n-1)) = dJt;
 dZ1(5,4)                 = dVg;
 dZ1(6,4)                 = dKe;
 
-dZ2 = zeros(n,3*n+1);
+dZ2 = zeros(n,4*n+1);
 dZ2(1:n,1:n)             = dM;
 dZ2(1:n,n+1:2*n)         = dC;
 dZ2(1:n,2*n+1:3*n)       = dK;
-dZ2(1:n,3*n+1)           = dG;
+dZ2(1:n,3*n+1:4*n)       = dMt;
+dZ2(1:n,4*n+1)           = dG;
 
 end
 %--------------------------------------------------------------------------

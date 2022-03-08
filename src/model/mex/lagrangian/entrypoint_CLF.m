@@ -49,7 +49,7 @@ Ktt  = shp.Ktt;
 Mtt  = shp.Mtt;
 Zeta = shp.Zeta;
 
-[M,C,K,R,G,p,Phi,J,Vg,Kin] = computeLagrangianFast(x,dx,... % states
+[M,C,K,R,G,p,Phi,J,Vg,Kin,Jt,Mt] = computeLagrangianFast(x,dx,... % states
     ds,...      % spatial steps
     p0,...      % position zero
     Phi0,...    % phi zero

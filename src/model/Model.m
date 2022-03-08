@@ -45,8 +45,8 @@ function obj = Model(Shapes,varargin)
     obj.Ba     = Shapes.Ba;
     obj.ShpFnc = Shapes.Theta;
     
-    obj.MaxIteration = 3;
-    obj.ResidualNorm = 0.01;
+    obj.MaxIteration = 20;
+    obj.ResidualNorm = 1e-3;
 
     G0 = Shapes.get('g0');
     obj.Phi0 = G0(1:3,1:3); 
@@ -284,7 +284,7 @@ disp('----------------------------------');
                 p_,Phi_,J_,Vg_,Kin_] = computeLagrangian(Model,Q,dQ);
         else
             [M_,C_,K_,R_,G_,...
-                p_,Phi_,J_,Vg_,Kin_] = computeLagrangianFast_mex(...
+                p_,Phi_,J_,Vg_,Kin_,Jt_,Mt_] = computeLagrangianFast_mex(...
                 Q,dQ,... 
                 Model.Shapes.ds,...   
                 Model.p0,... 
@@ -311,6 +311,8 @@ disp('----------------------------------');
         Model.Log.EL.K = K_;
         Model.Log.EL.G = G_;
         Model.Log.EL.J = J_;
+        Model.Log.EL.Jt= Jt_;
+        Model.Log.EL.Mt= Mt_;
 
         Model.Log.Vg  = Vg_;
         Model.Log.Kin = Kin_;
