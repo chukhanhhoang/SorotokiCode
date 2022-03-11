@@ -375,8 +375,8 @@ Phi  = Model.Phi0;
 s    = 0;
 
 % pre-computed Theta and Xi0;
-Th = Model.Theta;
-Xi = Model.Xi0;
+Th = Model.Shapes.get('ThetaEval');
+Xi = Model.Shapes.get('Xi0Eval');
 
 Z1 = zeros(6,6+2*(n-1));
 Z2 = zeros(n,3*n+1);

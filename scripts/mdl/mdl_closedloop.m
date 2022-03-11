@@ -2,7 +2,7 @@ clr;
 %% 
 L = 100;  % length of robot
 N = 30;   % number of discrete points on curve
-M = 5;    % number of modes
+M = 3;    % number of modes
 H = 1/125; % timesteps
 FPS = 30; % animation speed
 
@@ -25,84 +25,44 @@ Theta_ = shp.get('ThetaEval');
 Theta = pagemtimes(shp.Ba,Theta_);
 
 %%
-mdl = Model(shp,'Tstep',H,'Tsim',5);
+mdl = Model(shp,'Tstep',H,'Tsim',15);
 mdl.gVec = [0;0;-9.81e3];
+% mdl.gVec = [0;0;0];
 % mdl = mdl.computeEL(mdl.q0);
 
+%% find final config
+gd = SE3(eye(3), [50;0;20]);
+
+% qd = [-0.05;-0.1;-0.05;0.05;-0.02;0.01;0;0;0;0];
+% p = shp.FK(qd);
+
+%% controller
+mdl.tau = @(M) Controller(M,gd);
 
 %%
 mdl.q0(1)   = 0.0;
-mdl = mdl.computeEL(mdl.q0);
-
-%% find final config
-x=10;y=-50;z=-40;
-gd = SE3(roty(pi/4), [x;y;z]);
-% b = isomse3(logmapSE3(shp.get('g0')\gd) - L*isomse3(shp.xia0));
-% control_point = L;
-% control_point_index = round(control_point/L*N);
-% 
-% Theta_int = intTheta(Theta,shp.ds);
-% 
-% A = Theta_int(:,:,control_point_index);
-% 
-% qd = quadprog( mdl.Log.EL.K ,[],[],[],A,b);
-qd = find_qd_from_gL(mdl,gd);
-p = shp.FK(qd);
-
-%% controller
-mdl.tau = @(M) Controller(M,qd);
-
-
 mdl = mdl.simulate(); 
 
 %% 
-% figure(100);
-% plot(mdl.Log.t,mdl.Log.q(:,1:M),'LineW',2);
-% colororder(col);
+figure(100);
+plot(mdl.Log.t,mdl.Log.q(:,1:M),'LineW',2);
+colororder(col);
 
 %% animation
 % figure;
 % hold on;
 [rig] = setupRig(M,L,Modes);
-% gif('gLtoQdControl.gif')
+
 for ii = 1:fps(mdl.Log.t,FPS):length(mdl.Log.q)
+
     rig = rig.computeFK(mdl.Log.q(ii,:));
     rig = rig.update();
     hold on;
-    plot3(p(:,1),p(:,2),p(:,3),'LineW',3,'Color',col(1));
-    scatter3(x,y,z,100,col(2));
+%     plot3(p(:,1),p(:,2),p(:,3),'LineW',3,'Color',col(1));
+    scatter3(gd(1,4),gd(2,4),gd(3,4),10,col(2));
     axis([-.5*L .5*L -.5*L .5*L -L 0.1*L]);
     view(30,30);
     drawnow();
-%     gif
-end
-
-
-function qd = find_qd_from_gL(mdl,gd)
-    H = mdl.Log.EL.K;
-    func = @(x) cost(H,x);
-    nonlcon = @(x) nonl(mdl,x,gd);
-    options = optimoptions('fmincon','SpecifyObjectiveGradient',true,'StepTolerance',1e-7);
-    qd = fmincon(func,mdl.q0,[],[],[],[],[],[],nonlcon,options);
-    
-    function [f,g] = cost(H,x)
-        %objective func
-        f = x.'*H*x;
-        if nargout > 1 % gradient required
-            g = H*x;
-        end
-    end
-    
-    function g = endeff(mdl,x)
-        [g_,~] = mdl.Shapes.string(x);
-        g = g_(:,:,end);
-    end
-
-    function [c,ceq] = nonl(mdl,x,gd)
-        g = endeff(mdl,x);
-        c = norm(g(1:3,4)-gd(1:3,4))-1e-3;
-        ceq=[];
-    end
 end
 
 %%
@@ -124,15 +84,27 @@ function ret = intTheta(Theta,ds)
 end
 
 %% setup controller
-function tau = Controller(mdl,qd)
+function tau = Controller(mdl,gd)
     n = numel(mdl.Log.q);
     t = mdl.Log.t;
     % 
     %tau        = zeros(n,1);
+    [g,J_] = mdl.Shapes.string(mdl.Log.q);
+    J=J_(:,:,end);
+    
+    k1 = 0.1;
+    k2 = 0.1;
+    lam1 = 1e-3;
+    
+    Kp = diag([k1,k1,k1,k2,k2,k2]);
+    Xi = logmapSE3(g(:,:,end)\gd);
+    Fu = Kp*tmapSE3(Xi)*isomse3(Xi);
 
+    dq = lam1*J.'*Fu;
+    
     dV_dq = mdl.Log.EL.G + mdl.Log.EL.K*mdl.Log.q;
-    dVd_dq = mdl.Log.EL.K*(mdl.Log.q-qd);
-    tau = dV_dq-dVd_dq-4*mdl.Log.EL.M*mdl.Log.dq;
+    dVd_dq = -dq;
+    tau = dV_dq-dVd_dq-2*mdl.Log.EL.M*mdl.Log.dq;
 end
 
 %% setup rig
@@ -159,4 +131,3 @@ rig.g0 = SE3(roty(-pi),zeros(3,1));
 
 rig = rig.render();
 end
-

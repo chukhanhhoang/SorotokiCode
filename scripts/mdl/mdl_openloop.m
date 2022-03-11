@@ -6,7 +6,7 @@ M = 3;    % number of modes
 H = 1/60; % timesteps
 FPS = 30; % animation speed
 
-Modes = [0,M,M,0,0,0];  % pure-XY curvature
+Modes = [0,M,M,M,0,0];  % pure-XY curvature
 %%
 % generate nodal space
 X = linspace(0,L,N)';
@@ -24,7 +24,7 @@ shp = shp.rebuild();
 
 %%
 mdl = Model(shp,'Tstep',H,'Tsim',15);
-
+mdl.gVec = [0;0;-9.81e3];
 %% controller
 mdl.tau = @(M) Controller(M);
 
