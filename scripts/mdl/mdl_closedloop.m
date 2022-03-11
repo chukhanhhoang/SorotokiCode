@@ -2,7 +2,7 @@ clr;
 %% 
 L = 100;  % length of robot
 N = 30;   % number of discrete points on curve
-M = 3;    % number of modes
+M = 4;    % number of modes
 H = 1/125; % timesteps
 FPS = 30; % animation speed
 
@@ -89,12 +89,13 @@ function tau = Controller(mdl,gd)
     t = mdl.Log.t;
     % 
     %tau        = zeros(n,1);
-    [g,J_] = mdl.Shapes.string(mdl.Log.q);
-    J=J_(:,:,end);
+    g = SE3(mdl.Log.Phi(:,:,end),mdl.Log.p(:,end));
+    
+    J = mdl.Log.EL.J(:,:,end);
     
     k1 = 0.1;
     k2 = 0.1;
-    lam1 = 1e-3;
+    lam1 = 5e-3;
     
     Kp = diag([k1,k1,k1,k2,k2,k2]);
     Xi = logmapSE3(g(:,:,end)\gd);

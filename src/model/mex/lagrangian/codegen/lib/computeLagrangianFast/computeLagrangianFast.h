@@ -29,8 +29,8 @@ extern void computeLagrangianFast(
     const emxArray_real_T *Th, const emxArray_real_T *Ba, const double gVec[3],
     const double Ktt[36], const double Mtt[36], double Zeta, emxArray_real_T *M,
     emxArray_real_T *C, emxArray_real_T *K, emxArray_real_T *R,
-    emxArray_real_T *G, double p[3], double Phi[9], emxArray_real_T *J,
-    double *Vg, double *Kin);
+    emxArray_real_T *G, emxArray_real_T *p, emxArray_real_T *Phi,
+    emxArray_real_T *J, double *Vg, double *Kin);
 
 #ifdef __cplusplus
 }
