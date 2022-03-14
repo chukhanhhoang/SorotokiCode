@@ -4,6 +4,9 @@ M = 3;    % number of modes
 H = 1/125; % timesteps
 FPS = 30; % animation speed
 Modes = [0,M,M,0,0,0];
+
+load('test1.mat');
+r_o = [50;0;-50];
 %% 
 figure(100);
 plot(mdl.Log.t,mdl.Log.q(:,1:M),'LineW',2);

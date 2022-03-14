@@ -23,8 +23,8 @@ shp.Zeta = 0.15;      % Damping coefficient
 shp = shp.rebuild();
 
 %% Init model
-mdl = Model(shp,'Tstep',H,'Tsim',10);
-mdl.gVec = [0;0;-9.81e3];
+mdl = Model(shp,'Tstep',H,'Tsim',3);
+mdl.gVec = [0;0;-4.81e3];
 
 % Sphere position, radius
 xs = 20; ys = 0; zs = -45; rs = 20;
@@ -77,11 +77,11 @@ Y = gsogpoly(Y,X);
 end
 
 %% setup controller
-function tau = Contact(mdl,pC,rC)
+function [tau,error] = Contact(mdl,pC,rC)
 n = size(mdl.Log.q,1);
 t = mdl.Log.t;
 
-
+error=[];
 % Hunt-crossley param
 stiffness = 3e-4;
 damping_base = 2e-7;

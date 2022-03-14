@@ -1,8 +1,8 @@
 clr; 
 %% 
 L = 100;  % length of robot
-N = 30;   % number of discrete points on curve
-M = 4;    % number of modes
+N = 40;   % number of discrete points on curve
+M = 3;    % number of modes
 H = 1/125; % timesteps
 FPS = 30; % animation speed
 
@@ -25,13 +25,13 @@ Theta_ = shp.get('ThetaEval');
 Theta = pagemtimes(shp.Ba,Theta_);
 
 %%
-mdl = Model(shp,'Tstep',H,'Tsim',15);
+mdl = Model(shp,'Tstep',H,'Tsim',25);
 mdl.gVec = [0;0;-9.81e3];
 % mdl.gVec = [0;0;0];
 % mdl = mdl.computeEL(mdl.q0);
 
 %% find final config
-gd = SE3(eye(3), [50;0;20]);
+gd = SE3(eye(3), [50;40;20]);
 
 % qd = [-0.05;-0.1;-0.05;0.05;-0.02;0.01;0;0;0;0];
 % p = shp.FK(qd);
@@ -59,7 +59,7 @@ for ii = 1:fps(mdl.Log.t,FPS):length(mdl.Log.q)
     rig = rig.update();
     hold on;
 %     plot3(p(:,1),p(:,2),p(:,3),'LineW',3,'Color',col(1));
-    scatter3(gd(1,4),gd(2,4),gd(3,4),10,col(2));
+    scatter3(gd(1,4),gd(2,4),gd(3,4),100,col(2));
     axis([-.5*L .5*L -.5*L .5*L -L 0.1*L]);
     view(30,30);
     drawnow();
@@ -84,7 +84,7 @@ function ret = intTheta(Theta,ds)
 end
 
 %% setup controller
-function tau = Controller(mdl,gd)
+function [tau,error] = Controller(mdl,gd)
     n = numel(mdl.Log.q);
     t = mdl.Log.t;
     % 
@@ -95,12 +95,12 @@ function tau = Controller(mdl,gd)
     
     k1 = 0.1;
     k2 = 0.1;
-    lam1 = 5e-3;
+    lam1 = 2e-3;
     
     Kp = diag([k1,k1,k1,k2,k2,k2]);
     Xi = logmapSE3(g(:,:,end)\gd);
     Fu = Kp*tmapSE3(Xi)*isomse3(Xi);
-
+    error = Fu; % just keep log
     dq = lam1*J.'*Fu;
     
     dV_dq = mdl.Log.EL.G + mdl.Log.EL.K*mdl.Log.q;

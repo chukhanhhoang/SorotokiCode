@@ -1,14 +1,15 @@
 clr; 
 %% 
 L = 100;  % length of robot
-N = 40;   % number of discrete points on curve
+N = 30;   % number of discrete points on curve
 M = 3;    % number of modes
 H = 1/125; % timesteps
 FPS = 30; % animation speed
 
 Modes = [0,M,M,0,0,0];  % pure-XY curvature
-%%
-
+%%Object
+obj = sSphere(25,-30,-25,10);
+obj_gmodel = Gmodel(obj);
 % generate nodal space
 X = linspace(0,L,N)';
 Y = GenerateFunctionSpace(X,N,M,L);
@@ -25,29 +26,17 @@ Theta_ = shp.get('ThetaEval');
 Theta = pagemtimes(shp.Ba,Theta_);
 
 %%
-mdl = Model(shp,'Tstep',H,'Tsim',25);
+mdl = Model(shp,'Tstep',H,'Tsim',10);
 mdl.gVec = [0;0;-9.81e3];
 % mdl = mdl.computeEL(mdl.q0);
 
 
 %%
-mdl.q0(1)   = 0.0;
 mdl = mdl.computeEL(mdl.q0);
 
 %% find final config
-x=10;y=-10;z=-10;
-gd = SE3(roty(pi/4), [x;y;z]);
-% b = isomse3(logmapSE3(shp.get('g0')\gd) - L*isomse3(shp.xia0));
-% control_point = L;
-% control_point_index = round(control_point/L*N);
-% 
-% Theta_int = intTheta(Theta,shp.ds);
-% 
-% A = Theta_int(:,:,control_point_index);
-% 
-% qd = quadprog( mdl.Log.EL.K ,[],[],[],A,b);
 tic
-qd = find_qd_from_gL(mdl,gd);
+qd = find_qd_from_obj(mdl,obj);
 toc
 p = shp.FK(qd);
 
@@ -66,25 +55,26 @@ colororder(col);
 % figure;
 % hold on;
 [rig] = setupRig(M,L,Modes);
-% gif('gLtoQdControl.gif')
+obj_gmodel.bake().render()
+gif('SimpleGraspControl.gif')
 for ii = 1:fps(mdl.Log.t,FPS):length(mdl.Log.q)
     rig = rig.computeFK(mdl.Log.q(ii,:));
     rig = rig.update();
     hold on;
     plot3(p(:,1),p(:,2),p(:,3),'LineW',3,'Color',col(1));
-    scatter3(x,y,z,100,col(2));
+    scatter3(p(end,1),p(end,2),p(end,3),100,col(2));
     axis([-.5*L .5*L -.5*L .5*L -L 0.1*L]);
     view(30,30);
     drawnow();
-%     gif
+    gif
 end
 
 
-function qd = find_qd_from_gL(mdl,gd)
+function qd = find_qd_from_obj(mdl,obj)
     H = mdl.Log.EL.K;
     func = @(x) cost(H,x);
-    nonlcon = @(x) nonl(mdl,x,gd);
-    options = optimoptions('fmincon','SpecifyObjectiveGradient',true,'StepTolerance',1e-7);
+    nonlcon = @(x) nonl(mdl,x,obj);
+    options = optimoptions('fmincon','SpecifyObjectiveGradient',true,'StepTolerance',1e-10);
     qd = fmincon(func,mdl.q0,[],[],[],[],[],[],nonlcon,options);
     
     function [f,g] = cost(H,x)
@@ -94,15 +84,13 @@ function qd = find_qd_from_gL(mdl,gd)
             g = H*x;
         end
     end
-    
-    function g = endeff(mdl,x)
-        [g_,~] = mdl.Shapes.string(x);
-        g = g_(:,:,end);
-    end
 
-    function [c,ceq] = nonl(mdl,x,gd)
-        g = endeff(mdl,x);
-        c = norm(g(1:3,4)-gd(1:3,4))-1e-3;
+    function [c,ceq] = nonl(mdl,x,obj)
+        p = mdl.Shapes.FK(x); % positions of points
+        id= round(size(p,1)/3); % an third of the robot
+        d_ = obj.eval(p(2*id:end,:));
+        d = d_(:,end);
+        c = norm(d-2)-1e-3;
         ceq=[];
     end
 end
@@ -134,7 +122,7 @@ function [tau,error] = Controller(mdl,qd)
     error = mdl.Log.q-qd;
     dV_dq = mdl.Log.EL.G + mdl.Log.EL.K*mdl.Log.q;
     dVd_dq = mdl.Log.EL.K*(mdl.Log.q-qd);
-    tau = dV_dq-dVd_dq-4*mdl.Log.EL.M*mdl.Log.dq;
+    tau = dV_dq-dVd_dq-8*mdl.Log.EL.M*mdl.Log.dq;
 end
 
 %% setup rig
