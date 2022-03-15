@@ -8,7 +8,7 @@ FPS = 30; % animation speed
 
 Modes = [0,M,M,0,0,0];  % pure-XY curvature
 %%Object
-obj = sSphere(25,-30,-25,10);
+obj = sSphere(25,-10,-25,10);
 obj_gmodel = Gmodel(obj);
 % generate nodal space
 X = linspace(0,L,N)';
@@ -28,6 +28,7 @@ Theta = pagemtimes(shp.Ba,Theta_);
 %%
 mdl = Model(shp,'Tstep',H,'Tsim',10);
 mdl.gVec = [0;0;-9.81e3];
+mdl.q0(1) = 0.1;
 % mdl = mdl.computeEL(mdl.q0);
 
 
@@ -56,7 +57,7 @@ colororder(col);
 % hold on;
 [rig] = setupRig(M,L,Modes);
 obj_gmodel.bake().render()
-gif('SimpleGraspControl.gif')
+% gif('SimpleGraspControl.gif')
 for ii = 1:fps(mdl.Log.t,FPS):length(mdl.Log.q)
     rig = rig.computeFK(mdl.Log.q(ii,:));
     rig = rig.update();
@@ -66,7 +67,7 @@ for ii = 1:fps(mdl.Log.t,FPS):length(mdl.Log.q)
     axis([-.5*L .5*L -.5*L .5*L -L 0.1*L]);
     view(30,30);
     drawnow();
-    gif
+%     gif
 end
 
 
@@ -90,7 +91,7 @@ function qd = find_qd_from_obj(mdl,obj)
         id= round(size(p,1)/3); % an third of the robot
         d_ = obj.eval(p(2*id:end,:));
         d = d_(:,end);
-        c = norm(d-2)-1e-3;
+        c = norm(d-2)-5e-3;
         ceq=[];
     end
 end
