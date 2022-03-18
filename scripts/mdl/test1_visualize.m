@@ -16,7 +16,7 @@ colororder(col);
 figure;
 % hold on;
 [rig] = setupRig(M,L,Modes);
-
+gif('ChangController.gif');
 for ii = 1:fps(mdl.Log.t,FPS):length(mdl.Log.q)
 
     rig = rig.computeFK(mdl.Log.q(ii,:));
@@ -27,6 +27,7 @@ for ii = 1:fps(mdl.Log.t,FPS):length(mdl.Log.q)
     axis([-.5*L .5*L -.5*L .5*L -L 0.1*L]);
     view(30,30);
     drawnow();
+    gif;
 end
 
 function [rig, gmdl] = setupRig(M,L,Modes)

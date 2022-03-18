@@ -1,8 +1,8 @@
 clr; 
 %% 
 L = 100;  % length of robot
-N = 30;   % number of discrete points on curve
-M = 3;    % number of modes
+N = 50;   % number of discrete points on curve
+M = 4;    % number of modes
 H = 1/125; % timesteps
 FPS = 30; % animation speed
 
@@ -27,9 +27,10 @@ Theta_ = shp.get('ThetaEval');
 Theta = pagemtimes(shp.Ba,Theta_);
 
 %%
-mdl = Model(shp,'Tstep',H,'Tsim',20);
-mdl.gVec = [0;0;0];%-9.81e3
-mdl.q0(1) = 0.125;
+mdl = Model(shp,'Tstep',H,'Tsim',10);
+mdl.gVec = [0;0;0-9.81e3];%-9.81e3
+mdl.q0(1) = -0.05;
+mdl.q0(3) = -0.1;
 % mdl = mdl.computeEL(mdl.q0);
 
 
@@ -44,8 +45,6 @@ mdl = mdl.computeEL(mdl.q0);
 
 %% controller
 mdl.tau = @(M) Controller(M,obj_param);
-
-
 mdl = mdl.simulate(); 
 
 %% 
@@ -58,7 +57,7 @@ colororder(col);
 % hold on;
 [rig] = setupRig(M,L,Modes);
 obj_gmodel.bake().render()
-% gif('SimpleGraspControl.gif')
+gif('SpringControl_offcenter_5_-3.gif')
 for ii = 1:fps(mdl.Log.t,FPS):length(mdl.Log.q)
     rig = rig.computeFK(mdl.Log.q(ii,:));
     rig = rig.update();
@@ -68,7 +67,7 @@ for ii = 1:fps(mdl.Log.t,FPS):length(mdl.Log.q)
     axis([-.5*L .5*L -.5*L .5*L -L 0.1*L]);
     view(30,30);
     drawnow();
-%     gif
+    gif
 end
 
 
@@ -130,13 +129,13 @@ function [tau,error] = Controller(mdl,sphere)
 %     dV_dq = mdl.Log.EL.K*mdl.Log.q;
     p = mdl.Log.p;
     Phi = mdl.Log.Phi;
-    k = 6e-5;
+    k = 1e-4;
     body_force = zeros(n,1);
-    for i = 2*N/3:N
-        body_force = body_force + mdl.Log.EL.J(:,:,i).'* [zeros(3,1);Phi(:,:,i).'*k*(sphere_pos-p(:,i))];
+    for i = round(N/3):N
+        body_force = body_force + mdl.Log.EL.J(:,:,i).'* [zeros(3,1);Phi(:,:,i).'*k*(sphere_pos+[5;0;-3]-p(:,i))];
     end
     
-    tau = dV_dq -8*mdl.Log.EL.M*mdl.Log.dq + body_force;
+    tau = dV_dq -10*mdl.Log.EL.M*mdl.Log.dq + body_force;
     
     stiffness = -1e-2;
     damping = 1e-5;
@@ -144,15 +143,19 @@ function [tau,error] = Controller(mdl,sphere)
     
     for i = 1:N
         vector_from_sphere = p(:,i)-sphere_pos;
-        if norm(vector_from_sphere) <= rs
+        d = norm(vector_from_sphere);
+        if d <= rs
             body_velo = mdl.Log.EL.J(:,:,i)*mdl.Log.dq;
-            spatial_velo = Admap(mdl.Log.Phi(1:3,1:3,i),mdl.Log.p(1:3,i))*body_velo;
-            body_force = [zeros(3,1);mdl.Log.Phi(1:3,1:3,i).'*(stiffness*(1-rs/norm(vector_from_sphere))*vector_from_sphere-damping*spatial_velo(4:end))];
+            spatial_velo_twist = Admap(mdl.Log.Phi(1:3,1:3,i),mdl.Log.p(1:3,i))*body_velo;
+            spatial_velo = isomse3(spatial_velo_twist)*[p(:,i);1];
+            dd = spatial_velo(1:3).'*vector_from_sphere;
+            damp_force = -damping*(rs-d)^1.1*dd*vector_from_sphere/d;
+            body_force = [zeros(3,1);mdl.Log.Phi(1:3,1:3,i).'*(stiffness*(1-rs/d)*vector_from_sphere+damp_force)];
             tau = tau + mdl.Log.EL.J(:,:,i).' * body_force;
         end
     end
 end
-
+ 
 %% setup rig
 function [rig, gmdl] = setupRig(M,L,Modes)
 
