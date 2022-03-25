@@ -3,12 +3,12 @@ clr;
 L = 100;  % length of robot
 N = 50;   % number of discrete points on curve
 M = 4;    % number of modes
-H = 1/125; % timesteps
+H = 1/150; % timesteps
 FPS = 30; % animation speed
 
 Modes = [0,M,0,0,0,0];  % pure-XY curvature
 %%Object
-obj_param = [10,0,-50,12];
+obj_param = [20,0,-40,12];
 obj = sSphere(obj_param(1),obj_param(2),obj_param(3),obj_param(4));
 obj_gmodel = Gmodel(obj);
 % generate nodal space
@@ -132,7 +132,7 @@ function [tau,error] = Controller_2(mdl,sphere)
     k = 1e-4;
     body_force = zeros(n,1);
     for i = round(N/3):N
-        body_force = body_force + mdl.Log.EL.J(:,:,i).'* [zeros(3,1);Phi(:,:,i).'*k*(sphere_pos-p(:,i))];
+        body_force = body_force + mdl.Log.EL.J(:,:,i).'* [zeros(3,1);Phi(:,:,i).'*i/N*k*(sphere_pos-p(:,i))];
     end
     
     tau = dV_dq -10*mdl.Log.EL.M*mdl.Log.dq + body_force;
