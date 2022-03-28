@@ -115,7 +115,7 @@ function ret = intTheta(Theta,ds)
 end
 
 %% setup controller
-function [tau,error] = Controller_2(mdl,sphere)
+function [tau,F_ob] = Controller_2(mdl,sphere)
     n = numel(mdl.Log.q);
     t = mdl.Log.t;
     N = mdl.Shapes.NNode;
@@ -123,7 +123,6 @@ function [tau,error] = Controller_2(mdl,sphere)
     sphere_r = sphere(4);
     % 
     %tau        = zeros(n,1);
-    error = [];
     % compensate gravity
     dV_dq = mdl.Log.EL.G - 4 * mdl.Log.EL.K*mdl.Log.q;
 %     dV_dq = mdl.Log.EL.K*mdl.Log.q;
@@ -141,6 +140,7 @@ function [tau,error] = Controller_2(mdl,sphere)
     damping = 1e-5;
     rs = sphere_r;
     touch = 0;
+    F_ob = zeros(6,1);
     for i = 1:N
         vector_from_sphere = p(:,i)-sphere_pos;
         d = norm(vector_from_sphere);
@@ -151,8 +151,11 @@ function [tau,error] = Controller_2(mdl,sphere)
             spatial_velo = isomse3(spatial_velo_twist)*[p(:,i);1];
             dd = spatial_velo(1:3).'*vector_from_sphere;
             damp_force = -damping*(rs-d)^1.1*dd*vector_from_sphere/d;
-            body_force = [zeros(3,1);mdl.Log.Phi(1:3,1:3,i).'*(stiffness*(1-rs/d)*vector_from_sphere+damp_force)];
+            force = (stiffness*(1-rs/d)*vector_from_sphere+damp_force);
+            body_force = [zeros(3,1);mdl.Log.Phi(1:3,1:3,i).'*force];
             tau = tau + mdl.Log.EL.J(:,:,i).' * body_force;
+            
+            F_ob = F_ob+ [zeros(3,1); force];
         end
     end
     if touch

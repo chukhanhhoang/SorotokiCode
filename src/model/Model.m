@@ -109,7 +109,7 @@ if isempty(Model.dTaudq)
     [Model.dTaudq,Model.dTauddq] = computeControlJacobians(Model);
 end
 
-[T, X, U, Km, Ue, Ug, Other] = simulateSoftRobot(Model,...
+[T, X, U, Km, Ue, Ug, F_ob] = simulateSoftRobot(Model,...
     [Model.q0(:); Model.dq0(:)]);
 
 % extracting data
@@ -123,7 +123,8 @@ Model.Log.Vg  = Ug;
 Model.Log.Psi = Ue;
 
 % temp
-Model.Log.Other  = Other;
+Model.Log.F_ob  = F_ob;
+% Model.Log.P_ob  = P_ob;
 end
 %---------------------------------------------------- simulates dyn. system
 function Model = computeEL(Model,Q,varargin)
@@ -188,7 +189,7 @@ end
 %--------------------------------------------------------------------------
 methods (Access = private) %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %----------------------------------------- implicit time-integration solver
-function [Ts, X, U, Kin, Ue, Ug, Other] = simulateSoftRobot(Model,z0)
+function [Ts, X, U, Kin, Ue, Ug, F_ob] = simulateSoftRobot(Model,z0)
 
 Ts  = Model.t(:);
 h   = mean(diff(Ts));
@@ -201,7 +202,7 @@ Kin = zeros(length(Ts),1);
 Ue  = zeros(length(Ts),1);
 Ug  = zeros(length(Ts),1);
 % temp
-Other = zeros(length(Ts),1);
+F_ob = zeros(6,length(Ts));
 
 
 X(1,:)  = z0(:).';
@@ -261,7 +262,7 @@ for ii = 1:length(Ts)-1
     Ug(ii+1)  = Model.Log.Vg;
     
     %temp
-    Other(ii+1) = norm(Model.Log.Error);
+    F_ob(:,ii+1) = Model.Log.F_ob;
     
     % update progress bar
     inc = round(100*(ii/(length(Ts)))-1);
@@ -324,8 +325,8 @@ disp('----------------------------------');
         Model.Log.Kin = Kin_;
         
         % evaluate control action
-        [Model.tau_,error] = Model.tau(Model);
-        Model.Log.Error = error;
+        [Model.tau_,F_ob] = Model.tau(Model);
+        Model.Log.F_ob = F_ob;
         
         % pre-compute Minverse
         Minv = M_\eye(numel(Q));
