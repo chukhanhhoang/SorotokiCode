@@ -4,13 +4,18 @@ classdef System
         Model;
         Object;
         Control;
+        
+        F_SR;
+        F_ob;
+        contact_flag=false;
     end
     
     properties (Access = private)
         Contact;
         ContactWrenches;
         ContactPoints;
-        inContact;
+        
+        
     end
     
     %% public methods
@@ -20,19 +25,26 @@ classdef System
             sys.Object = obj;
             sys.Contact = contact;
             sys.Control = control;
+            sys.Model.tau = @(mdl) sys.computeTau(mdl);
         end
         
-        function [flag, F_SR, F_ob] = computeContact(System)
-            [flag, F_SR, F_ob] = System.Contact(System.Model, System.Object);
+        function [tau,other] = computeTau(System, mdl)
+            [F_SR_, ~, flag] = System.Contact(mdl, System.Object);
+            [tau,other] = System.Control(mdl, System.Object,flag);
+            tau = tau + F_SR_;
         end
         
-        function [Wrenches, Points] = computeControl(System)
-            [Wrenches, Points] = System.Control(System.Model, System.Object);
-        end
     end
     
     %% private methods
     methods (Access = private)
+        function System = saveContactInfo(System,F_SR_, F_ob_, flag_)
+            System.F_SR = F_SR_;
+            System.F_ob = F_ob_;
+            System.contact_flag = flag_;
+        end
+        
+        
         
     end
     

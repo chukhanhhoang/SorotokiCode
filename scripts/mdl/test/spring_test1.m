@@ -8,7 +8,7 @@ FPS = 30; % animation speed
 
 Modes = [0,M,0,0,0,0];  % pure-XY curvature
 %%Object
-obj_param = [20,0,-40,12];
+obj_param = [30,0,65,12];
 obj = sSphere(obj_param(1),obj_param(2),obj_param(3),obj_param(4));
 obj_gmodel = Gmodel(obj);
 % generate nodal space

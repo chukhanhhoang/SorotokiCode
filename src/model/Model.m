@@ -274,7 +274,7 @@ for ii = 1:length(Ts)-1
     Ug(ii+1)  = Model.Log.Vg;
     
     %temp
-    Other(ii+1) = norm(Model.Log.Error);
+%     Other(ii+1) = norm(Model.Log.Error);
     
     % update progress bar
     inc = round(100*(ii/(length(Ts)))-1);
@@ -337,8 +337,8 @@ disp('----------------------------------');
         Model.Log.Kin = Kin_;
         
         % evaluate control action
-        [Model.tau_,error] = Model.tau(Model);
-        Model.Log.Error = error;
+        Model.tau_ = Model.tau(Model);
+%         Model.Log.Error = error;
         
         % pre-compute Minverse
         Minv = M_\eye(numel(Q));
