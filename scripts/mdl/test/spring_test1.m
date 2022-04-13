@@ -8,7 +8,7 @@ FPS = 30; % animation speed
 
 Modes = [0,M,0,0,0,0];  % pure-XY curvature
 %%Object
-obj_param = [10,0,-50,12];
+obj_param = [40,0,-20,12];
 obj = sSphere(obj_param(1),obj_param(2),obj_param(3),obj_param(4));
 obj_gmodel = Gmodel(obj);
 % generate nodal space
@@ -31,7 +31,7 @@ mdl = Model(shp,'Tstep',H,'Tsim',10);
 mdl.gVec = [0;0;0-9.81e3];%-9.81e3
 mdl.q0(1) = -0.25;
 mdl.q0(3) = -0.1;
-% mdl = mdl.computeEL(mdl.q0);
+mdl = mdl.computeEL(mdl.q0);
 
 
 %%
@@ -67,6 +67,9 @@ for ii = 1:fps(mdl.Log.t,FPS):length(mdl.Log.q)
     axis([-.5*L .5*L -.5*L .5*L -L 0.1*L]);
     view(30,30);
     drawnow();
+%     if ii == 1
+%         gif('SpringControl.gif')
+%     end
 %     gif
 end
 
@@ -124,7 +127,7 @@ function [tau,F_ob] = Controller_2(mdl,sphere)
     % 
     %tau        = zeros(n,1);
     % compensate gravity
-    dV_dq = mdl.Log.EL.G - 4 * mdl.Log.EL.K*mdl.Log.q;
+    dV_dq = mdl.Log.EL.G + mdl.Log.EL.K*mdl.Log.q;
 %     dV_dq = mdl.Log.EL.K*mdl.Log.q;
     p = mdl.Log.p;
     Phi = mdl.Log.Phi;
@@ -134,13 +137,14 @@ function [tau,F_ob] = Controller_2(mdl,sphere)
         body_force = body_force + mdl.Log.EL.J(:,:,i).'* [zeros(3,1);Phi(:,:,i).'*k*(sphere_pos-p(:,i))];
     end
     
-    tau = dV_dq -10*mdl.Log.EL.M*mdl.Log.dq + body_force;
+    tau_c = dV_dq -10*mdl.Log.EL.M*mdl.Log.dq + body_force - 5*exp(-10*t) * mdl.Log.EL.K*mdl.Log.q;
     
+    tau_o = zeros(n,1);
     stiffness = -1e-2;
     damping = 1e-5;
     rs = sphere_r;
     touch = 0;
-    F_ob = zeros(6,1);
+%     F_ob = zeros(6,1);
     for i = 1:N
         vector_from_sphere = p(:,i)-sphere_pos;
         d = norm(vector_from_sphere);
@@ -153,14 +157,18 @@ function [tau,F_ob] = Controller_2(mdl,sphere)
             damp_force = -damping*(rs-d)^1.1*dd*vector_from_sphere/d;
             force = (stiffness*(1-rs/d)*vector_from_sphere+damp_force);
             body_force = [zeros(3,1);mdl.Log.Phi(1:3,1:3,i).'*force];
-            tau = tau + mdl.Log.EL.J(:,:,i).' * body_force;
+            tau_o = tau_o + mdl.Log.EL.J(:,:,i).' * body_force;
             
-            F_ob = F_ob+ [zeros(3,1); force];
+%             F_ob = F_ob+ [zeros(3,1); force];
         end
     end
-    if touch
-        tau = tau + 5 * mdl.Log.EL.K*mdl.Log.q;
-    end
+    
+    
+    u = (mdl.Log.EL.J(:,:,end).'*diag([0 1 0 1 0 0]))\tau_c;
+    F_ob=u;
+%     res = tau-mdl.Log.EL.J(:,:,end).'*[eye(3);zeros(3)]*u
+    tau = mdl.Log.EL.J(:,:,end).'*diag([0 1 0 1 0 0])*u+tau_o;
+%     tau(3:end) = 0;
 end
 
 function [tau,error] = Controller(mdl,sphere)
@@ -171,7 +179,7 @@ function [tau,error] = Controller(mdl,sphere)
     sphere_r = sphere(4);
     % 
     %tau        = zeros(n,1);
-    error = [];
+    error = zeros(6,1);
     % compensate gravity
     dV_dq = mdl.Log.EL.G + mdl.Log.EL.K*mdl.Log.q;
 %     dV_dq = mdl.Log.EL.K*mdl.Log.q;

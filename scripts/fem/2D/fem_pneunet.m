@@ -30,7 +30,7 @@ fem = fem.set('TimeStep',1/170,'BdBox',[0,120,-80,20],'Linestyle','none',...
 fem = fem.AddConstraint('Support',fem.FindNodes('Box',[0,0,0,10]),[1,1]);
 %fem = fem.AddConstraint('Gravity',[],[0,-9.81e3]);
 fem = fem.AddConstraint('Pressure',fem.FindEdges('AllHole'),...
-    @(t) P0*sigmoid(t));
+    @(f) P0*sigmoid(f.Time));
 
 %fem = fem.AddConstraint('Contact',@(x) SDF(x,20),[0,0]);
 
