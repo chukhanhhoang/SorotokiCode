@@ -1,5 +1,5 @@
 %#codegen
-function [M,C,K,R,G,p,Phi,J,Vg,Kin] = computeLagrangianFast(x,dx,... % states
+function [M,C,K,R,G,p,Phi,J,Jt,Vg,Kin] = computeLagrangianFast(x,dx,... % states
     ds,...      % spatial steps
     p0,...      % position zero
     Phi0,...    % phi zero
@@ -42,8 +42,10 @@ end
 % recover the kinematics entities
 p   = Z1(1:3,4);
 Phi = Z1(1:3,1:3);
+Ai  = Admapinv(Phi,p);
 B1  = Z1(1:6,5:5+n-1);
-J   = Admapinv(Phi,p)*B1;
+J   = Ai*B1;
+Jt  = Ai*Z1(1:6,6+n-1:6+2*(n-1));
 
 % recover the dynamics entities
 M  = Z2(1:n,1:n);

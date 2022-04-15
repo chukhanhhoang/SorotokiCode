@@ -6,7 +6,7 @@ N = M*10;  % number of discrete points on curve
 H = 1/75; % timesteps
 FPS = 30;  % animation speed
 
-Modes = [0,M,M,0,0,0];  % pure-XY curvature
+Modes = [0,M,0,1,0,0];  % pure-XY curvature
 %%
 % generate nodal space
 X = linspace(0,L,N)';
@@ -18,9 +18,9 @@ shp = Shapes(Y,Modes,'L0',L);
 shp.E    = 0.05;     % Young's modulus in Mpa
 shp.Nu   = 0.33;     % Poisson ratio
 shp.Rho  = 1000e-12; % Density in kg/mm^3
-shp.Zeta = 0.05;      % Damping coefficient
+shp.Zeta = 0.3;      % Damping coefficient
 
-shp.Gvec = [0; 0; -9.81];
+shp.Gvec = [0; 0; -100];
 
 shp = shp.rebuild();
 
@@ -28,7 +28,8 @@ shp = shp.rebuild();
 mdl = Model(shp,'Tstep',H,'Tsim',15);
 
 %%
-mdl.q0(1)    = 1.5;
+mdl.q0(1)    = 0;
+mdl.q0(M+1)  = -0.5;
 mdl = mdl.simulate(); 
 %% 
 figure(100);
@@ -84,7 +85,7 @@ rig = rig.parent(1,0,0);
 rig = rig.parent(1,1,1);
 
 rig    = rig.texture(1,base);
-rig.g0 = SE3(roty(-pi),zeros(3,1));
+rig.g0 = SE3(roty(-0),zeros(3,1));
 
 rig = rig.render();
 end

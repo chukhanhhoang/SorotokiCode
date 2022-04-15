@@ -558,7 +558,7 @@ static real_T (*x_emlrt_marshallIn(const emlrtStack *sp, const mxArray *src,
 }
 
 void computeLagrangianFast_api(const mxArray *const prhs[12], int32_T nlhs,
-                               const mxArray *plhs[10])
+                               const mxArray *plhs[11])
 {
   emlrtStack st = {
       NULL, /* site */
@@ -569,6 +569,7 @@ void computeLagrangianFast_api(const mxArray *const prhs[12], int32_T nlhs,
   emxArray_real_T *C;
   emxArray_real_T *G;
   emxArray_real_T *J;
+  emxArray_real_T *Jt;
   emxArray_real_T *K;
   emxArray_real_T *M;
   emxArray_real_T *R;
@@ -602,6 +603,7 @@ void computeLagrangianFast_api(const mxArray *const prhs[12], int32_T nlhs,
   emxInit_real_T(&st, &R, 2, true);
   emxInit_real_T(&st, &G, 1, true);
   emxInit_real_T(&st, &J, 2, true);
+  emxInit_real_T(&st, &Jt, 2, true);
   /* Marshall function inputs */
   x->canFreeData = false;
   emlrt_marshallIn(&st, emlrtAlias(prhs[0]), "x", x);
@@ -622,7 +624,7 @@ void computeLagrangianFast_api(const mxArray *const prhs[12], int32_T nlhs,
   Gvec = e_emlrt_marshallIn(&st, emlrtAlias(prhs[11]), "Gvec");
   /* Invoke the target function */
   computeLagrangianFast(x, dx, ds, *p0, *Phi0, xia0, Th, Ba, *Ktt, *Mtt, Zeta,
-                        *Gvec, M, C, K, R, G, *p, *Phi, J, &Vg, &Kin);
+                        *Gvec, M, C, K, R, G, *p, *Phi, J, Jt, &Vg, &Kin);
   /* Marshall function outputs */
   M->canFreeData = false;
   plhs[0] = emlrt_marshallOut(M);
@@ -664,10 +666,15 @@ void computeLagrangianFast_api(const mxArray *const prhs[12], int32_T nlhs,
   }
   emxFree_real_T(&J);
   if (nlhs > 8) {
-    plhs[8] = e_emlrt_marshallOut(Vg);
+    Jt->canFreeData = false;
+    plhs[8] = emlrt_marshallOut(Jt);
   }
+  emxFree_real_T(&Jt);
   if (nlhs > 9) {
-    plhs[9] = e_emlrt_marshallOut(Kin);
+    plhs[9] = e_emlrt_marshallOut(Vg);
+  }
+  if (nlhs > 10) {
+    plhs[10] = e_emlrt_marshallOut(Kin);
   }
   emlrtHeapReferenceStackLeaveFcnR2012b(&st);
 }
