@@ -9,15 +9,15 @@ classdef Model
         q, dq, t;
         q0, dq0, Phi0, p0;
         Log;
-   
+        Xi0;Theta;
         tau, tau_;
     end
     
     properties (Access = private)
         N; S;
         dTaudq, dTauddq;
-        Theta;
-        Xi0;
+        
+        
         
         MexSolver = true;
         
