@@ -2,11 +2,11 @@ clr; cd;
 %% 
 L = 100;   % length of robot
 M = 4;     % number of modes
-N = M*10;  % number of discrete points on curve
+N = M*20;  % number of discrete points on curve
 H = 1/75; % timesteps
 FPS = 30;  % animation speed
 
-Modes = [0,M,0,1,0,0];  % pure-XY curvature
+Modes = [0,M,M,1,0,0];  % pure-XY curvature
 %%
 % generate nodal space
 X = linspace(0,L,N)';
@@ -15,25 +15,28 @@ Y = GenerateFunctionSpace(X,N,M,L);
 %%
 shp = Shapes(Y,Modes,'L0',L);
 
-shp.E    = 0.05;     % Young's modulus in Mpa
+shp.E    = 0.02;     % Young's modulus in Mpa
 shp.Nu   = 0.33;     % Poisson ratio
 shp.Rho  = 1000e-12; % Density in kg/mm^3
-shp.Zeta = 0.3;      % Damping coefficient
+shp.Zeta = 0.2;      % Damping coefficient
 
 shp.Gvec = [0; 0; -100];
 
 shp = shp.rebuild();
 
 %%
-mdl = Model(shp,'Tstep',H,'Tsim',15);
+mdl = Model(shp,'Tstep',H,'Tsim',60);
 
 %%
-mdl.q0(1)    = 0;
-mdl.q0(M+1)  = -0.5;
+mdl.q0(1)    = 0.5;
+mdl.q0(2)    = -0.25;
+mdl.q0(5)    = 0.25;
+% mdl.q0(2*M+1)  = -0.5;
 mdl = mdl.simulate(); 
+% mdl.pinned = M*10;
 %% 
 figure(100);
-plot(mdl.Log.t,mdl.Log.q(:,1:M),'LineW',2);
+plot(mdl.Log.t,mdl.Log.q(:,1:2*M),'LineW',2);
 colororder(col);
 
 %% animation
@@ -47,6 +50,10 @@ for ii = 1:fps(mdl.Log.t,FPS):length(mdl.Log.q)
     axis([-.5*L .5*L -.5*L .5*L -L 0.1*L]);
     view(30,30);
     drawnow();
+    if ii == 1
+        gif('pinned_end.gif');
+    end
+    gif;
 end
 
 
@@ -85,7 +92,7 @@ rig = rig.parent(1,0,0);
 rig = rig.parent(1,1,1);
 
 rig    = rig.texture(1,base);
-rig.g0 = SE3(roty(-0),zeros(3,1));
+rig.g0 = SE3(roty(-pi),zeros(3,1));
 
 rig = rig.render();
 end

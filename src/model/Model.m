@@ -11,6 +11,7 @@ classdef Model
         Log;
         Xi0;Theta;
         tau, tau_;
+        pinned;
     end
     
     properties (Access = private)
@@ -315,9 +316,20 @@ disp('----------------------------------');
         % pre-compute Minverse
         Minv = M_\eye(numel(Q));
         
+        % compute constraints
+        alpha = 20;
+        beta = 1;
+        H_ = C_*dQ + K_*Q + R_*dQ + G_;
+%         Wt = J_;
+%         wbar = Jt_*dQ;
+        Wt = [zeros(3,3) eye(3)]*J_;
+        wbar = [zeros(3,3) eye(3)]*Jt_*dQ;
+        wbar_stab = wbar+2*alpha*beta*(Wt*dQ);
+        lambda = (Wt*Minv*Wt.')\(Wt*Minv*(H_ - Model.tau_) - wbar_stab);
+                    
         % flow field
         f = [dQ; ...
-             Minv*(Model.tau_ - C_*dQ - K_*Q - R_*dQ - G_)];
+             Minv*(Model.tau_ - H_ + Wt.'*lambda)];
     end
     
 end
