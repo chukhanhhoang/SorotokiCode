@@ -38,17 +38,15 @@ static const mxArray *b_emlrt_marshallOut(const emxArray_real_T *u);
 static real_T c_emlrt_marshallIn(const emlrtStack *sp, const mxArray *ds,
                                  const char_T *identifier);
 
-static const mxArray *c_emlrt_marshallOut(const real_T u[3]);
+static const mxArray *c_emlrt_marshallOut(const emxArray_real_T *u);
 
 static real_T d_emlrt_marshallIn(const emlrtStack *sp, const mxArray *u,
                                  const emlrtMsgIdentifier *parentId);
 
-static const mxArray *d_emlrt_marshallOut(const real_T u[9]);
+static const mxArray *d_emlrt_marshallOut(const real_T u);
 
 static real_T (*e_emlrt_marshallIn(const emlrtStack *sp, const mxArray *p0,
                                    const char_T *identifier))[3];
-
-static const mxArray *e_emlrt_marshallOut(const real_T u);
 
 static void emlrt_marshallIn(const emlrtStack *sp, const mxArray *x,
                              const char_T *identifier, emxArray_real_T *y);
@@ -162,16 +160,15 @@ static real_T c_emlrt_marshallIn(const emlrtStack *sp, const mxArray *ds,
   return y;
 }
 
-static const mxArray *c_emlrt_marshallOut(const real_T u[3])
+static const mxArray *c_emlrt_marshallOut(const emxArray_real_T *u)
 {
-  static const int32_T i = 0;
-  static const int32_T i1 = 3;
+  static const int32_T iv[3] = {0, 0, 0};
   const mxArray *m;
   const mxArray *y;
   y = NULL;
-  m = emlrtCreateNumericArray(1, (const void *)&i, mxDOUBLE_CLASS, mxREAL);
-  emlrtMxSetData((mxArray *)m, (void *)&u[0]);
-  emlrtSetDimensions((mxArray *)m, &i1, 1);
+  m = emlrtCreateNumericArray(3, (const void *)&iv[0], mxDOUBLE_CLASS, mxREAL);
+  emlrtMxSetData((mxArray *)m, &u->data[0]);
+  emlrtSetDimensions((mxArray *)m, &u->size[0], 3);
   emlrtAssign(&y, m);
   return y;
 }
@@ -185,16 +182,12 @@ static real_T d_emlrt_marshallIn(const emlrtStack *sp, const mxArray *u,
   return y;
 }
 
-static const mxArray *d_emlrt_marshallOut(const real_T u[9])
+static const mxArray *d_emlrt_marshallOut(const real_T u)
 {
-  static const int32_T iv[2] = {0, 0};
-  static const int32_T iv1[2] = {3, 3};
   const mxArray *m;
   const mxArray *y;
   y = NULL;
-  m = emlrtCreateNumericArray(2, (const void *)&iv[0], mxDOUBLE_CLASS, mxREAL);
-  emlrtMxSetData((mxArray *)m, (void *)&u[0]);
-  emlrtSetDimensions((mxArray *)m, &iv1[0], 2);
+  m = emlrtCreateDoubleScalar(u);
   emlrtAssign(&y, m);
   return y;
 }
@@ -209,16 +202,6 @@ static real_T (*e_emlrt_marshallIn(const emlrtStack *sp, const mxArray *p0,
   thisId.bParentIsCell = false;
   y = f_emlrt_marshallIn(sp, emlrtAlias(p0), &thisId);
   emlrtDestroyArray(&p0);
-  return y;
-}
-
-static const mxArray *e_emlrt_marshallOut(const real_T u)
-{
-  const mxArray *m;
-  const mxArray *y;
-  y = NULL;
-  m = emlrtCreateDoubleScalar(u);
-  emlrtAssign(&y, m);
   return y;
 }
 
@@ -558,7 +541,7 @@ static real_T (*x_emlrt_marshallIn(const emlrtStack *sp, const mxArray *src,
 }
 
 void computeLagrangianFast_api(const mxArray *const prhs[12], int32_T nlhs,
-                               const mxArray *plhs[10])
+                               const mxArray *plhs[11])
 {
   emlrtStack st = {
       NULL, /* site */
@@ -569,27 +552,26 @@ void computeLagrangianFast_api(const mxArray *const prhs[12], int32_T nlhs,
   emxArray_real_T *C;
   emxArray_real_T *G;
   emxArray_real_T *J;
+  emxArray_real_T *Jt;
   emxArray_real_T *K;
   emxArray_real_T *M;
+  emxArray_real_T *Phi;
   emxArray_real_T *R;
   emxArray_real_T *Th;
   emxArray_real_T *dx;
+  emxArray_real_T *p;
   emxArray_real_T *x;
   emxArray_real_T *xia0;
   real_T(*Ktt)[36];
   real_T(*Mtt)[36];
-  real_T(*Phi)[9];
   real_T(*Phi0)[9];
   real_T(*Gvec)[3];
-  real_T(*p)[3];
   real_T(*p0)[3];
   real_T Kin;
   real_T Vg;
   real_T Zeta;
   real_T ds;
   st.tls = emlrtRootTLSGlobal;
-  p = (real_T(*)[3])mxMalloc(sizeof(real_T[3]));
-  Phi = (real_T(*)[9])mxMalloc(sizeof(real_T[9]));
   emlrtHeapReferenceStackEnterFcnR2012b(&st);
   emxInit_real_T(&st, &x, 1, true);
   emxInit_real_T(&st, &dx, 1, true);
@@ -601,7 +583,10 @@ void computeLagrangianFast_api(const mxArray *const prhs[12], int32_T nlhs,
   emxInit_real_T(&st, &K, 2, true);
   emxInit_real_T(&st, &R, 2, true);
   emxInit_real_T(&st, &G, 1, true);
-  emxInit_real_T(&st, &J, 2, true);
+  emxInit_real_T(&st, &p, 2, true);
+  emxInit_real_T(&st, &Phi, 3, true);
+  emxInit_real_T(&st, &J, 3, true);
+  emxInit_real_T(&st, &Jt, 3, true);
   /* Marshall function inputs */
   x->canFreeData = false;
   emlrt_marshallIn(&st, emlrtAlias(prhs[0]), "x", x);
@@ -622,7 +607,7 @@ void computeLagrangianFast_api(const mxArray *const prhs[12], int32_T nlhs,
   Gvec = e_emlrt_marshallIn(&st, emlrtAlias(prhs[11]), "Gvec");
   /* Invoke the target function */
   computeLagrangianFast(x, dx, ds, *p0, *Phi0, xia0, Th, Ba, *Ktt, *Mtt, Zeta,
-                        *Gvec, M, C, K, R, G, *p, *Phi, J, &Vg, &Kin);
+                        *Gvec, M, C, K, R, G, p, Phi, J, Jt, &Vg, &Kin);
   /* Marshall function outputs */
   M->canFreeData = false;
   plhs[0] = emlrt_marshallOut(M);
@@ -653,21 +638,30 @@ void computeLagrangianFast_api(const mxArray *const prhs[12], int32_T nlhs,
   }
   emxFree_real_T(&G);
   if (nlhs > 5) {
-    plhs[5] = c_emlrt_marshallOut(*p);
+    p->canFreeData = false;
+    plhs[5] = emlrt_marshallOut(p);
   }
+  emxFree_real_T(&p);
   if (nlhs > 6) {
-    plhs[6] = d_emlrt_marshallOut(*Phi);
+    Phi->canFreeData = false;
+    plhs[6] = c_emlrt_marshallOut(Phi);
   }
+  emxFree_real_T(&Phi);
   if (nlhs > 7) {
     J->canFreeData = false;
-    plhs[7] = emlrt_marshallOut(J);
+    plhs[7] = c_emlrt_marshallOut(J);
   }
   emxFree_real_T(&J);
   if (nlhs > 8) {
-    plhs[8] = e_emlrt_marshallOut(Vg);
+    Jt->canFreeData = false;
+    plhs[8] = c_emlrt_marshallOut(Jt);
   }
+  emxFree_real_T(&Jt);
   if (nlhs > 9) {
-    plhs[9] = e_emlrt_marshallOut(Kin);
+    plhs[9] = d_emlrt_marshallOut(Vg);
+  }
+  if (nlhs > 10) {
+    plhs[10] = d_emlrt_marshallOut(Kin);
   }
   emlrtHeapReferenceStackLeaveFcnR2012b(&st);
 }

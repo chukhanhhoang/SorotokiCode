@@ -551,16 +551,14 @@ static void LagrangianODEX(const emxArray_real_T *x, const emxArray_real_T *dx,
   emxFree_real_T(&dG);
 }
 
-void computeLagrangianFast(const emxArray_real_T *x, const emxArray_real_T *dx,
-                           double ds, const double p0[3], const double Phi0[9],
-                           const emxArray_real_T *xia0,
-                           const emxArray_real_T *Th, const emxArray_real_T *Ba,
-                           const double Ktt[36], const double Mtt[36],
-                           double Zeta, const double Gvec[3],
-                           emxArray_real_T *M, emxArray_real_T *C,
-                           emxArray_real_T *K, emxArray_real_T *R,
-                           emxArray_real_T *G, double p[3], double Phi[9],
-                           emxArray_real_T *J, double *Vg, double *Kin)
+void computeLagrangianFast(
+    const emxArray_real_T *x, const emxArray_real_T *dx, double ds,
+    const double p0[3], const double Phi0[9], const emxArray_real_T *xia0,
+    const emxArray_real_T *Th, const emxArray_real_T *Ba, const double Ktt[36],
+    const double Mtt[36], double Zeta, const double Gvec[3], emxArray_real_T *M,
+    emxArray_real_T *C, emxArray_real_T *K, emxArray_real_T *R,
+    emxArray_real_T *G, emxArray_real_T *p, emxArray_real_T *Phi,
+    emxArray_real_T *J, emxArray_real_T *Jt, double *Vg, double *Kin)
 {
   emxArray_real_T *K1Z1;
   emxArray_real_T *K1Z2;
@@ -570,19 +568,33 @@ void computeLagrangianFast(const emxArray_real_T *x, const emxArray_real_T *dx,
   emxArray_real_T *Z2;
   emxArray_real_T *b_Th;
   emxArray_real_T *b_Z1;
-  double a[36];
+  double Ai[36];
   double Rt[9];
   double dv[9];
+  double a;
+  double a_tmp;
   double d;
   double d1;
   double s;
   int b_i;
   int b_loop_ub;
+  int b_n;
+  int c_loop_ub;
+  int d_loop_ub;
+  int e_loop_ub;
   int i;
   int i1;
+  int i2;
+  int i3;
+  int i4;
+  int i5;
+  int i6;
+  int i7;
   int ii;
+  int j;
   int k;
   int loop_ub;
+  int n;
   unsigned int u;
   emxInit_real_T(&Z1, 2);
   /*  % states */
@@ -621,7 +633,72 @@ void computeLagrangianFast(const emxArray_real_T *x, const emxArray_real_T *dx,
     Z1->data[i + 18] = p0[i];
   }
   /* NLStiff = false;  */
+  i = p->size[0] * p->size[1];
+  p->size[0] = 3;
+  p->size[1] = (int)((double)Th->size[2] / 2.0);
+  emxEnsureCapacity_real_T(p, i);
+  loop_ub = 3 * (int)((double)Th->size[2] / 2.0);
+  for (i = 0; i < loop_ub; i++) {
+    p->data[i] = 0.0;
+  }
+  i = Phi->size[0] * Phi->size[1] * Phi->size[2];
+  Phi->size[0] = 3;
+  Phi->size[1] = 3;
+  Phi->size[2] = (int)((double)Th->size[2] / 2.0);
+  emxEnsureCapacity_real_T(Phi, i);
+  loop_ub = 9 * (int)((double)Th->size[2] / 2.0);
+  for (i = 0; i < loop_ub; i++) {
+    Phi->data[i] = 0.0;
+  }
+  i = J->size[0] * J->size[1] * J->size[2];
+  J->size[0] = 6;
+  J->size[1] = x->size[0];
+  J->size[2] = (int)((double)Th->size[2] / 2.0);
+  emxEnsureCapacity_real_T(J, i);
+  loop_ub = 6 * x->size[0] * (int)((double)Th->size[2] / 2.0);
+  for (i = 0; i < loop_ub; i++) {
+    J->data[i] = 0.0;
+  }
+  i = Jt->size[0] * Jt->size[1] * Jt->size[2];
+  Jt->size[0] = 6;
+  Jt->size[1] = x->size[0];
+  Jt->size[2] = (int)((double)Th->size[2] / 2.0);
+  emxEnsureCapacity_real_T(Jt, i);
+  loop_ub = 6 * x->size[0] * (int)((double)Th->size[2] / 2.0);
+  for (i = 0; i < loop_ub; i++) {
+    Jt->data[i] = 0.0;
+  }
   i = (int)((double)Th->size[2] / 2.0);
+  if (0 <= i - 1) {
+    b_loop_ub = Th->size[0];
+    i1 = Th->size[1];
+    c_loop_ub = Th->size[1];
+    a = 0.66666666666666663 * ds;
+    d_loop_ub = Th->size[0];
+    i2 = Th->size[1];
+    e_loop_ub = Th->size[1];
+    a_tmp = 0.25 * ds;
+    dv[0] = 0.0;
+    dv[4] = 0.0;
+    dv[8] = 0.0;
+    if (5U > x->size[0] + 4U) {
+      i4 = 0;
+      i5 = -1;
+    } else {
+      i4 = 4;
+      i5 = x->size[0] + 3;
+    }
+    n = i5 - i4;
+    s = 2.0 * ((double)x->size[0] - 1.0) + 6.0;
+    if (((double)x->size[0] + 6.0) - 1.0 > s) {
+      i6 = 0;
+      i7 = 0;
+    } else {
+      i6 = x->size[0] + 4;
+      i7 = (int)s;
+    }
+    b_n = (i7 - i6) - 1;
+  }
   emxInit_real_T(&K1Z1, 2);
   emxInit_real_T(&K1Z2, 2);
   emxInit_real_T(&K2Z1, 2);
@@ -630,18 +707,16 @@ void computeLagrangianFast(const emxArray_real_T *x, const emxArray_real_T *dx,
   emxInit_real_T(&b_Z1, 2);
   for (ii = 0; ii < i; ii++) {
     /*  first EL-diff eval */
-    i1 = (int)((unsigned int)(ii + 1) << 1);
-    loop_ub = Th->size[0];
-    b_loop_ub = Th->size[1];
-    k = b_Th->size[0] * b_Th->size[1];
-    b_Th->size[0] = Th->size[0];
-    b_Th->size[1] = Th->size[1];
-    emxEnsureCapacity_real_T(b_Th, k);
-    for (k = 0; k < b_loop_ub; k++) {
-      for (b_i = 0; b_i < loop_ub; b_i++) {
-        b_Th->data[b_i + b_Th->size[0] * k] =
-            Th->data[(b_i + Th->size[0] * k) +
-                     Th->size[0] * Th->size[1] * (i1 - 2)];
+    i3 = (int)((unsigned int)(ii + 1) << 1);
+    j = b_Th->size[0] * b_Th->size[1];
+    b_Th->size[0] = b_loop_ub;
+    b_Th->size[1] = i1;
+    emxEnsureCapacity_real_T(b_Th, j);
+    for (j = 0; j < c_loop_ub; j++) {
+      for (b_i = 0; b_i < b_loop_ub; b_i++) {
+        b_Th->data[b_i + b_Th->size[0] * j] =
+            Th->data[(b_i + Th->size[0] * j) +
+                     Th->size[0] * Th->size[1] * (i3 - 2)];
       }
     }
     LagrangianODEX(x, dx, Z1, b_Th,
@@ -649,26 +724,23 @@ void computeLagrangianFast(const emxArray_real_T *x, const emxArray_real_T *dx,
                        xia0->data[6 * ((int)((unsigned int)(ii + 1) << 1) - 2)],
                    Ba, Mtt, Ktt, Gvec, K1Z1, K1Z2);
     /*  second EL-diff eval */
-    s = 0.66666666666666663 * ds;
-    k = b_Z1->size[0] * b_Z1->size[1];
+    j = b_Z1->size[0] * b_Z1->size[1];
     b_Z1->size[0] = 6;
     b_Z1->size[1] = Z1->size[1];
-    emxEnsureCapacity_real_T(b_Z1, k);
+    emxEnsureCapacity_real_T(b_Z1, j);
     loop_ub = 6 * Z1->size[1];
-    for (k = 0; k < loop_ub; k++) {
-      b_Z1->data[k] = Z1->data[k] + s * K1Z1->data[k];
+    for (j = 0; j < loop_ub; j++) {
+      b_Z1->data[j] = Z1->data[j] + a * K1Z1->data[j];
     }
-    loop_ub = Th->size[0];
-    b_loop_ub = Th->size[1];
-    k = b_Th->size[0] * b_Th->size[1];
-    b_Th->size[0] = Th->size[0];
-    b_Th->size[1] = Th->size[1];
-    emxEnsureCapacity_real_T(b_Th, k);
-    for (k = 0; k < b_loop_ub; k++) {
-      for (b_i = 0; b_i < loop_ub; b_i++) {
-        b_Th->data[b_i + b_Th->size[0] * k] =
-            Th->data[(b_i + Th->size[0] * k) +
-                     Th->size[0] * Th->size[1] * (i1 - 1)];
+    j = b_Th->size[0] * b_Th->size[1];
+    b_Th->size[0] = d_loop_ub;
+    b_Th->size[1] = i2;
+    emxEnsureCapacity_real_T(b_Th, j);
+    for (j = 0; j < e_loop_ub; j++) {
+      for (b_i = 0; b_i < d_loop_ub; b_i++) {
+        b_Th->data[b_i + b_Th->size[0] * j] =
+            Th->data[(b_i + Th->size[0] * j) +
+                     Th->size[0] * Th->size[1] * (i3 - 1)];
       }
     }
     LagrangianODEX(x, dx, b_Z1, b_Th,
@@ -676,17 +748,109 @@ void computeLagrangianFast(const emxArray_real_T *x, const emxArray_real_T *dx,
                        xia0->data[6 * ((int)((unsigned int)(ii + 1) << 1) - 1)],
                    Ba, Mtt, Ktt, Gvec, K2Z1, K2Z2);
     /*  update integrands */
-    s = 0.25 * ds;
     loop_ub = 6 * Z1->size[1];
-    i1 = Z1->size[0] * Z1->size[1];
+    i3 = Z1->size[0] * Z1->size[1];
     Z1->size[0] = 6;
-    emxEnsureCapacity_real_T(Z1, i1);
-    for (i1 = 0; i1 < loop_ub; i1++) {
-      Z1->data[i1] += s * (K1Z1->data[i1] + 3.0 * K2Z1->data[i1]);
+    emxEnsureCapacity_real_T(Z1, i3);
+    for (i3 = 0; i3 < loop_ub; i3++) {
+      Z1->data[i3] += a_tmp * (K1Z1->data[i3] + 3.0 * K2Z1->data[i3]);
     }
     loop_ub = Z2->size[0] * Z2->size[1];
-    for (i1 = 0; i1 < loop_ub; i1++) {
-      Z2->data[i1] += s * (K1Z2->data[i1] + 3.0 * K2Z2->data[i1]);
+    for (i3 = 0; i3 < loop_ub; i3++) {
+      Z2->data[i3] += a_tmp * (K1Z2->data[i3] + 3.0 * K2Z2->data[i3]);
+    }
+    /*  compute kinematics */
+    for (i3 = 0; i3 < 3; i3++) {
+      p->data[i3 + 3 * ii] = Z1->data[i3 + 18];
+      j = 3 * i3 + 9 * ii;
+      Phi->data[j] = Z1->data[6 * i3];
+      Phi->data[j + 1] = Z1->data[6 * i3 + 1];
+      Phi->data[j + 2] = Z1->data[6 * i3 + 2];
+    }
+    /* --------------------------------------------------------------------------
+     */
+    for (i3 = 0; i3 < 3; i3++) {
+      loop_ub = i3 + 9 * ii;
+      Rt[3 * i3] = Phi->data[loop_ub];
+      Rt[3 * i3 + 1] = Phi->data[loop_ub + 3];
+      Rt[3 * i3 + 2] = Phi->data[loop_ub + 6];
+    }
+    /* --------------------------------------------------------------------------
+     */
+    memset(&Ai[0], 0, 36U * sizeof(double));
+    for (i3 = 0; i3 < 3; i3++) {
+      s = Rt[3 * i3];
+      Ai[6 * i3] = s;
+      loop_ub = 6 * (i3 + 3);
+      Ai[loop_ub + 3] = s;
+      s = Rt[3 * i3 + 1];
+      Ai[6 * i3 + 1] = s;
+      Ai[loop_ub + 4] = s;
+      s = Rt[3 * i3 + 2];
+      Ai[6 * i3 + 2] = s;
+      Ai[loop_ub + 5] = s;
+    }
+    s = p->data[3 * ii + 2];
+    dv[1] = -s;
+    d = p->data[3 * ii + 1];
+    dv[2] = d;
+    dv[3] = s;
+    s = p->data[3 * ii];
+    dv[5] = -s;
+    dv[6] = -d;
+    dv[7] = s;
+    for (i3 = 0; i3 < 3; i3++) {
+      s = Rt[i3];
+      d = Rt[i3 + 3];
+      d1 = Rt[i3 + 6];
+      for (j = 0; j < 3; j++) {
+        Ai[(i3 + 6 * j) + 3] =
+            (s * dv[3 * j] + d * dv[3 * j + 1]) + d1 * dv[3 * j + 2];
+      }
+    }
+    i3 = K1Z1->size[0] * K1Z1->size[1];
+    K1Z1->size[0] = 6;
+    K1Z1->size[1] = (i5 - i4) + 1;
+    emxEnsureCapacity_real_T(K1Z1, i3);
+    for (j = 0; j <= n; j++) {
+      loop_ub = j * 6;
+      for (b_i = 0; b_i < 6; b_i++) {
+        s = 0.0;
+        for (k = 0; k < 6; k++) {
+          i3 = loop_ub + k;
+          s += Ai[k * 6 + b_i] * Z1->data[i3 % 6 + 6 * (i4 + i3 / 6)];
+        }
+        K1Z1->data[loop_ub + b_i] = s;
+      }
+    }
+    loop_ub = K1Z1->size[1];
+    for (i3 = 0; i3 < loop_ub; i3++) {
+      for (j = 0; j < 6; j++) {
+        b_i = j + 6 * i3;
+        J->data[b_i + 6 * J->size[1] * ii] = K1Z1->data[b_i];
+      }
+    }
+    i3 = K1Z1->size[0] * K1Z1->size[1];
+    K1Z1->size[0] = 6;
+    K1Z1->size[1] = i7 - i6;
+    emxEnsureCapacity_real_T(K1Z1, i3);
+    for (j = 0; j <= b_n; j++) {
+      loop_ub = j * 6;
+      for (b_i = 0; b_i < 6; b_i++) {
+        s = 0.0;
+        for (k = 0; k < 6; k++) {
+          i3 = loop_ub + k;
+          s += Ai[k * 6 + b_i] * Z1->data[i3 % 6 + 6 * (i6 + i3 / 6)];
+        }
+        K1Z1->data[loop_ub + b_i] = s;
+      }
+    }
+    loop_ub = K1Z1->size[1];
+    for (i3 = 0; i3 < loop_ub; i3++) {
+      for (j = 0; j < 6; j++) {
+        b_i = j + 6 * i3;
+        Jt->data[b_i + 6 * Jt->size[1] * ii] = K1Z1->data[b_i];
+      }
     }
   }
   emxFree_real_T(&b_Z1);
@@ -695,76 +859,6 @@ void computeLagrangianFast(const emxArray_real_T *x, const emxArray_real_T *dx,
   emxFree_real_T(&K2Z1);
   emxFree_real_T(&K1Z2);
   emxFree_real_T(&K1Z1);
-  /*  recover the kinematics entities */
-  for (i = 0; i < 3; i++) {
-    p[i] = Z1->data[i + 18];
-    Phi[3 * i] = Z1->data[6 * i];
-    Phi[3 * i + 1] = Z1->data[6 * i + 1];
-    Phi[3 * i + 2] = Z1->data[6 * i + 2];
-  }
-  if (5U > x->size[0] + 4U) {
-    i = 0;
-    i1 = -1;
-  } else {
-    i = 4;
-    i1 = x->size[0] + 3;
-  }
-  /* --------------------------------------------------------------------------
-   */
-  for (k = 0; k < 3; k++) {
-    Rt[3 * k] = Z1->data[k];
-    Rt[3 * k + 1] = Z1->data[k + 6];
-    Rt[3 * k + 2] = Z1->data[k + 12];
-  }
-  /* --------------------------------------------------------------------------
-   */
-  memset(&a[0], 0, 36U * sizeof(double));
-  for (k = 0; k < 3; k++) {
-    s = Rt[3 * k];
-    a[6 * k] = s;
-    ii = 6 * (k + 3);
-    a[ii + 3] = s;
-    s = Rt[3 * k + 1];
-    a[6 * k + 1] = s;
-    a[ii + 4] = s;
-    s = Rt[3 * k + 2];
-    a[6 * k + 2] = s;
-    a[ii + 5] = s;
-  }
-  dv[0] = 0.0;
-  dv[1] = -Z1->data[20];
-  dv[2] = Z1->data[19];
-  dv[3] = Z1->data[20];
-  dv[4] = 0.0;
-  dv[5] = -Z1->data[18];
-  dv[6] = -Z1->data[19];
-  dv[7] = Z1->data[18];
-  dv[8] = 0.0;
-  for (k = 0; k < 3; k++) {
-    s = Rt[k];
-    d = Rt[k + 3];
-    d1 = Rt[k + 6];
-    for (b_i = 0; b_i < 3; b_i++) {
-      a[(k + 6 * b_i) + 3] =
-          (s * dv[3 * b_i] + d * dv[3 * b_i + 1]) + d1 * dv[3 * b_i + 2];
-    }
-  }
-  ii = i1 - i;
-  i1 = J->size[0] * J->size[1];
-  J->size[0] = 6;
-  J->size[1] = ii + 1;
-  emxEnsureCapacity_real_T(J, i1);
-  for (b_loop_ub = 0; b_loop_ub <= ii; b_loop_ub++) {
-    loop_ub = b_loop_ub * 6;
-    for (b_i = 0; b_i < 6; b_i++) {
-      s = 0.0;
-      for (k = 0; k < 6; k++) {
-        i1 = loop_ub + k;
-        s += a[k * 6 + b_i] * Z1->data[i1 % 6 + 6 * (i + i1 / 6)];
-      }
-      J->data[loop_ub + b_i] = s;
-    }
-  }
   /*  recover the dynamics entities */
   if (1 > x->size[0]) {
     loop_ub = 0;
@@ -795,14 +889,14 @@ void computeLagrangianFast(const emxArray_real_T *x, const emxArray_real_T *dx,
     i = x->size[0];
     i1 = (int)u;
   }
-  k = C->size[0] * C->size[1];
+  i2 = C->size[0] * C->size[1];
   C->size[0] = loop_ub;
   b_loop_ub = i1 - i;
   C->size[1] = b_loop_ub;
-  emxEnsureCapacity_real_T(C, k);
+  emxEnsureCapacity_real_T(C, i2);
   for (i1 = 0; i1 < b_loop_ub; i1++) {
-    for (k = 0; k < loop_ub; k++) {
-      C->data[k + C->size[0] * i1] = Z2->data[k + Z2->size[0] * (i + i1)];
+    for (i2 = 0; i2 < loop_ub; i2++) {
+      C->data[i2 + C->size[0] * i1] = Z2->data[i2 + Z2->size[0] * (i + i1)];
     }
   }
   if (1 > x->size[0]) {
@@ -819,27 +913,27 @@ void computeLagrangianFast(const emxArray_real_T *x, const emxArray_real_T *dx,
     i = (int)u - 1;
     i1 = (int)s;
   }
-  k = K->size[0] * K->size[1];
+  i2 = K->size[0] * K->size[1];
   K->size[0] = loop_ub;
   b_loop_ub = i1 - i;
   K->size[1] = b_loop_ub;
-  emxEnsureCapacity_real_T(K, k);
+  emxEnsureCapacity_real_T(K, i2);
   for (i1 = 0; i1 < b_loop_ub; i1++) {
-    for (k = 0; k < loop_ub; k++) {
-      K->data[k + K->size[0] * i1] = Z2->data[k + Z2->size[0] * (i + i1)];
+    for (i2 = 0; i2 < loop_ub; i2++) {
+      K->data[i2 + K->size[0] * i1] = Z2->data[i2 + Z2->size[0] * (i + i1)];
     }
   }
   if (1 > x->size[0]) {
-    ii = 0;
+    c_loop_ub = 0;
   } else {
-    ii = x->size[0];
+    c_loop_ub = x->size[0];
   }
   i1 = (int)(3.0 * (double)x->size[0] + 1.0);
-  k = G->size[0];
-  G->size[0] = ii;
-  emxEnsureCapacity_real_T(G, k);
-  for (k = 0; k < ii; k++) {
-    G->data[k] = Z2->data[k + Z2->size[0] * (i1 - 1)];
+  i2 = G->size[0];
+  G->size[0] = c_loop_ub;
+  emxEnsureCapacity_real_T(G, i2);
+  for (i2 = 0; i2 < c_loop_ub; i2++) {
+    G->data[i2] = Z2->data[i2 + Z2->size[0] * (i1 - 1)];
   }
   *Vg = Z1->data[22];
   *Kin = Z1->data[23];
@@ -849,9 +943,9 @@ void computeLagrangianFast(const emxArray_real_T *x, const emxArray_real_T *dx,
   emxEnsureCapacity_real_T(R, i1);
   emxFree_real_T(&Z1);
   for (i1 = 0; i1 < b_loop_ub; i1++) {
-    for (k = 0; k < loop_ub; k++) {
-      R->data[k + R->size[0] * i1] =
-          Zeta * Z2->data[k + Z2->size[0] * (i + i1)];
+    for (i2 = 0; i2 < loop_ub; i2++) {
+      R->data[i2 + R->size[0] * i1] =
+          Zeta * Z2->data[i2 + Z2->size[0] * (i + i1)];
     }
   }
   emxFree_real_T(&Z2);

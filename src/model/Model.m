@@ -9,7 +9,7 @@ classdef Model
         q, dq, t;
         q0, dq0, Phi0, p0;
         Log;
-        Xi0;Theta;
+        pinned, fixed;
         tau, tau_;
     end
     
@@ -17,7 +17,7 @@ classdef Model
         N; S;
         dTaudq, dTauddq;
         
-        
+        Xi0;Theta;
         
         MexSolver = true;
         
@@ -277,7 +277,7 @@ disp('----------------------------------');
                 p_,Phi_,J_,Vg_,Kin_] = computeLagrangian(Model,Q,dQ);
         else
             [M_,C_,K_,R_,G_,...
-                p_,Phi_,J_,Vg_,Kin_] = computeLagrangianFast_mex(...
+                p_,Phi_,J_,Jt_,Vg_,Kin_] = computeLagrangianFast_mex(...
                 Q,dQ,... 
                 Model.Shapes.ds,...   
                 Model.p0,... 
@@ -304,6 +304,7 @@ disp('----------------------------------');
         Model.Log.EL.K = K_;
         Model.Log.EL.G = G_;
         Model.Log.EL.J = J_;
+        Model.Log.EL.Jt= Jt_;
 
         Model.Log.Vg  = Vg_;
         Model.Log.Kin = Kin_;
@@ -314,9 +315,31 @@ disp('----------------------------------');
         % pre-compute Minverse
         Minv = M_\eye(numel(Q));
         
+        % compute constraints
+        alpha = 20;
+        beta = 1;
+        H_ = C_*dQ + K_*Q + R_*dQ + G_;
+        
+            % pinned points
+            n_pinned = length(Model.pinned);
+            psz1 = size(J_(:,:,1),1);
+            psz2 = size(J_(:,:,1),2);
+            tmp_pin_1 = repmat([zeros(3,3) eye(3)],[1,n_pinned]);
+            tmp_pin_2 = zeros(psz1*n_pinned,psz2);
+            tmp_pin_3 = zeros(psz1*n_pinned,psz2);
+            
+            for i = 1:n_pinned
+                tmp_pin_2((i-1)*psz1+1:i*psz1,:) = J_(:,:,Model.pinned(i));
+                tmp_pin_3((i-1)*psz1+1:i*psz1,:) =Jt_(:,:,Model.pinned(i));
+            end
+            Wt = tmp_pin_1* tmp_pin_2;
+            wbar = tmp_pin_1*tmp_pin_3*dQ;
+            wbar_stab = wbar+2*alpha*beta*(Wt*dQ);
+            lambda = (Wt*Minv*Wt.')\(Wt*Minv*(H_ - Model.tau_) - wbar_stab);
+        
         % flow field
         f = [dQ; ...
-             Minv*(Model.tau_ - C_*dQ - K_*Q - R_*dQ - G_)];
+             Minv*(Model.tau_ - H_ + Wt.'*lambda)];
     end
     
 end

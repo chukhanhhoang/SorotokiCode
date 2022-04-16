@@ -2,11 +2,11 @@ clr; cd;
 %% 
 L = 100;   % length of robot
 M = 4;     % number of modes
-N = M*10;  % number of discrete points on curve
+N = M*20;  % number of discrete points on curve
 H = 1/75; % timesteps
 FPS = 30;  % animation speed
 
-Modes = [0,M,M,0,0,0];  % pure-XY curvature
+Modes = [0,M,M,1,0,0];  % pure-XY curvature
 %%
 % generate nodal space
 X = linspace(0,L,N)';
@@ -20,15 +20,18 @@ shp.Nu   = 0.33;     % Poisson ratio
 shp.Rho  = 1000e-12; % Density in kg/mm^3
 shp.Zeta = 0.05;      % Damping coefficient
 
-shp.Gvec = [0; 0; -9.81];
+shp.Gvec = [0; 0; -100];
 
 shp = shp.rebuild();
 
 %%
 mdl = Model(shp,'Tstep',H,'Tsim',15);
 
+mdl.pinned = [N/4, N/2];
 %%
-mdl.q0(1)    = 1.5;
+mdl.q0(1)    = 0.5;
+mdl.q0(2)    = -0.5;
+mdl.q0(3)    = -0.25;
 mdl = mdl.simulate(); 
 %% 
 figure(100);
