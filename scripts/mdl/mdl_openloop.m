@@ -27,7 +27,9 @@ shp = shp.rebuild();
 %%
 mdl = Model(shp,'Tstep',H,'Tsim',15);
 
-mdl.pinned = [N/4, N/2];
+mdl.constrained_points = [N/4, N/2];
+mdl.constraint_type = "fixed";
+
 %%
 mdl.q0(1)    = 0.5;
 mdl.q0(2)    = -0.5;

@@ -9,7 +9,7 @@ classdef Model
         q, dq, t;
         q0, dq0, Phi0, p0;
         Log;
-        pinned, fixed;
+        constrained_points; constraint_type;
         tau, tau_;
     end
     
@@ -319,27 +319,33 @@ disp('----------------------------------');
         alpha = 20;
         beta = 1;
         H_ = C_*dQ + K_*Q + R_*dQ + G_;
-        
-            % pinned points
-            n_pinned = length(Model.pinned);
-            psz1 = size(J_(:,:,1),1);
-            psz2 = size(J_(:,:,1),2);
-            tmp_pin_1 = repmat([zeros(3,3) eye(3)],[1,n_pinned]);
-            tmp_pin_2 = zeros(psz1*n_pinned,psz2);
-            tmp_pin_3 = zeros(psz1*n_pinned,psz2);
-            
-            for i = 1:n_pinned
-                tmp_pin_2((i-1)*psz1+1:i*psz1,:) = J_(:,:,Model.pinned(i));
-                tmp_pin_3((i-1)*psz1+1:i*psz1,:) =Jt_(:,:,Model.pinned(i));
+        sz1 = size(J_(:,:,1),1);
+        sz2 = size(J_(:,:,1),2);
+            % constrained points
+            n_constraint = length(Model.constrained_points);
+            if n_constraint>0
+                if Model.constraint_type == "pinned"
+                    tmp_1 = repmat([zeros(3,3) eye(3)],[1,n_constraint]);
+                else
+                    tmp_1 = repmat(eye(6),[1,n_constraint]);
+                end
+                tmp_2 = zeros(sz1*n_constraint,sz2);
+                tmp_3 = zeros(sz1*n_constraint,sz2);
+
+                for i = 1:n_constraint
+                    tmp_2((i-1)*sz1+1:i*sz1,:) = J_(:,:,Model.constrained_points(i));
+                    tmp_3((i-1)*sz1+1:i*sz1,:) =Jt_(:,:,Model.constrained_points(i));
+                end
+                Wt = tmp_1* tmp_2;
+                wbar = tmp_1*tmp_3*dQ;
+                wbar_stab = wbar+2*alpha*beta*(Wt*dQ);
+                lambda = (Wt*Minv*Wt.')\(Wt*Minv*(H_ - Model.tau_) - wbar_stab);
+                H_ = H_ - Wt.'*lambda;
             end
-            Wt = tmp_pin_1* tmp_pin_2;
-            wbar = tmp_pin_1*tmp_pin_3*dQ;
-            wbar_stab = wbar+2*alpha*beta*(Wt*dQ);
-            lambda = (Wt*Minv*Wt.')\(Wt*Minv*(H_ - Model.tau_) - wbar_stab);
-        
+            
         % flow field
         f = [dQ; ...
-             Minv*(Model.tau_ - H_ + Wt.'*lambda)];
+             Minv*(Model.tau_ - H_)];
     end
     
 end
