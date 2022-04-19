@@ -1,12 +1,12 @@
 clr; cd;
 %% 
 L = 100;   % length of robot
-M = 4;     % number of modes
-N = M*20;  % number of discrete points on curve
-H = 1/75; % timesteps
+M = 10;     % number of modes
+N = M*10;  % number of discrete points on curve
+H = 1/100; % timesteps
 FPS = 30;  % animation speed
 
-Modes = [0,M,M,1,0,0];  % pure-XY curvature
+Modes = [0,M,2,1,0,0];  % pure-XY curvature
 %%
 % generate nodal space
 X = linspace(0,L,N)';
@@ -27,13 +27,13 @@ shp = shp.rebuild();
 %%
 mdl = Model(shp,'Tstep',H,'Tsim',15);
 
-mdl.constrained_points = [N/4, N/2];
-mdl.constraint_type = "fixed";
+mdl.constrained_points = [round(N/8):round(N/3)];
+mdl.constraint_type = "pinned";
 
 %%
-mdl.q0(1)    = 0.5;
-mdl.q0(2)    = -0.5;
-mdl.q0(3)    = -0.25;
+% mdl.q0(1)    = 0.5;
+% mdl.q0(2)    = -0.5;
+% mdl.q0(3)    = -0.25;
 mdl = mdl.simulate(); 
 %% 
 figure(100);
@@ -60,7 +60,8 @@ function Y = GenerateFunctionSpace(X,N,M,L)
 Y = zeros(N,M);
 
 for ii = 1:M
-   Y(:,ii) = chebyshev(X/L,ii-1); % chebyshev
+%    Y(:,ii) = chebyshev(X/L,ii-1); % chebyshev
+   Y(:,ii) = pcc(X/L,ii,M); % pcc
 end
 
 % ensure its orthonormal (gram–schmidt)
@@ -89,7 +90,7 @@ rig = rig.parent(1,0,0);
 rig = rig.parent(1,1,1);
 
 rig    = rig.texture(1,base);
-rig.g0 = SE3(roty(-pi),zeros(3,1));
+rig.g0 = SE3(roty(pi/2),zeros(3,1));
 
 rig = rig.render();
 end

@@ -181,6 +181,40 @@ p   = p(end,:).';
 eta = Jacob*dQ(:);
 end
 
+function [Wt,lambda] = computeConstraints(Model,Minv,H_)
+    % constraint stab constant
+    lambda_stab = 40;
+    %Jacobian
+    J_ = Model.Log.EL.J;
+    Jt_= Model.Log.EL.Jt;
+    % dq
+    dQ = Model.Log.dq;
+    
+    %compute
+    sz2 = Model.Shapes.NDim;
+    n_constraint = length(Model.constrained_points);
+    if n_constraint>0
+        if Model.constraint_type == "pinned"
+            tmp_1 = [zeros(3,3) eye(3)];
+            sz1 = 3;
+        else
+            sz1 = 6;
+            tmp_1 = eye(6);
+        end
+        tmp_2 = zeros(sz1*n_constraint,sz2);
+        tmp_3 = zeros(sz1*n_constraint,sz2);
+
+        for i = 1:n_constraint
+            tmp_2((i-1)*sz1+1:i*sz1,:) =tmp_1* J_(:,:,Model.constrained_points(i));
+            tmp_3((i-1)*sz1+1:i*sz1,:) =tmp_1*Jt_(:,:,Model.constrained_points(i));
+        end
+        Wt = tmp_2;
+        wbar = tmp_3*dQ;
+        wbar_stab = wbar+lambda_stab*(Wt*dQ);
+        lambda = (Wt*Minv*Wt.')\(Wt*Minv*(H_ - Model.tau_) - wbar_stab);
+    end
+end
+
 end
 %--------------------------------------------------------------------------
 methods (Access = private) %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -315,37 +349,20 @@ disp('----------------------------------');
         % pre-compute Minverse
         Minv = M_\eye(numel(Q));
         
-        % compute constraints
-        alpha = 20;
-        beta = 1;
+        % pre-compute H
         H_ = C_*dQ + K_*Q + R_*dQ + G_;
-        sz1 = size(J_(:,:,1),1);
-        sz2 = size(J_(:,:,1),2);
-            % constrained points
-            n_constraint = length(Model.constrained_points);
-            if n_constraint>0
-                if Model.constraint_type == "pinned"
-                    tmp_1 = repmat([zeros(3,3) eye(3)],[1,n_constraint]);
-                else
-                    tmp_1 = repmat(eye(6),[1,n_constraint]);
-                end
-                tmp_2 = zeros(sz1*n_constraint,sz2);
-                tmp_3 = zeros(sz1*n_constraint,sz2);
-
-                for i = 1:n_constraint
-                    tmp_2((i-1)*sz1+1:i*sz1,:) = J_(:,:,Model.constrained_points(i));
-                    tmp_3((i-1)*sz1+1:i*sz1,:) =Jt_(:,:,Model.constrained_points(i));
-                end
-                Wt = tmp_1* tmp_2;
-                wbar = tmp_1*tmp_3*dQ;
-                wbar_stab = wbar+2*alpha*beta*(Wt*dQ);
-                lambda = (Wt*Minv*Wt.')\(Wt*Minv*(H_ - Model.tau_) - wbar_stab);
-                H_ = H_ - Wt.'*lambda;
-            end
-            
+        
+        % compute constraints
+        if ~isempty(Model.constrained_points)
+            [Wt,lambda] = Model.computeConstraints(Minv,H_);
+        else
+            Wt = 0;
+            lambda = 0;
+        end
+        
         % flow field
         f = [dQ; ...
-             Minv*(Model.tau_ - H_)];
+             Minv*(Model.tau_ - H_+ Wt.'*lambda)];
     end
     
 end
