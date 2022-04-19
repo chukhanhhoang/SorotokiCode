@@ -2,8 +2,8 @@ clr; cd;
 %% 
 L = 100;   % length of robot
 M = 10;     % number of modes
-N = M*10;  % number of discrete points on curve
-H = 1/100; % timesteps
+N = M*3;  % number of discrete points on curve
+H = 1/250; % timesteps
 FPS = 30;  % animation speed
 
 Modes = [0,M,2,1,0,0];  % pure-XY curvature
@@ -24,10 +24,15 @@ shp.Gvec = [0; 0; -100];
 
 shp = shp.rebuild();
 
-%%
-mdl = Model(shp,'Tstep',H,'Tsim',15);
-
-% mdl.constrained_points = [58:75];
+%% Object
+xsph = 30;ysph=0; zsph = -15; rsph = 10;
+sp=sSphere(xsph,ysph,-zsph,rsph);
+sp2=sSphere(xsph,ysph,zsph,rsph-2);
+%% Model with contact
+mdl = cModel(shp,'Tstep',H,'Tsim',10);
+mdl.object = sp;
+mdl.object_center = [xsph; ysph; -zsph];
+% mdl.constrained_points = [round(N/8)];
 mdl.constraint_type = "pinned";
 
 %%
@@ -42,6 +47,9 @@ colororder(col);
 
 %% animation
 [rig] = setupRig(M,L,Modes);
+obj = Gmodel(sp2);
+obj.Texture = diffuse(0.925);
+obj.bake.render();
 
 for ii = 1:fps(mdl.Log.t,FPS):length(mdl.Log.q)
 

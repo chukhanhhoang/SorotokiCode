@@ -183,7 +183,7 @@ end
 
 function [Wt,lambda] = computeConstraints(Model,Minv,H_)
     % constraint stab constant
-    lambda_stab = 40;
+    lambda_stab = 20;
     %Jacobian
     J_ = Model.Log.EL.J;
     Jt_= Model.Log.EL.Jt;
@@ -304,7 +304,9 @@ disp('----------------------------------');
         n  = Model.Shapes.NDim;
         Q  = Z(1:n);
         dQ = Z(n+1:2*n);
-       
+        if abs(T-1)<=0.01
+            dQ = zeros(n,1);
+        end
         % compute Lagrangian entries
         if ~Model.MexSolver
             [M_,C_,K_,R_,G_,...
