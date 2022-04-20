@@ -2,8 +2,8 @@ clr; cd;
 %% 
 L = 100;   % length of robot
 % pcc
-M = 20;     % number of modes/links
-P = 4;      % points per link
+M = 25;     % number of modes/links
+P = 3;      % points per link
 % % chebyshev
 % M = 8;     % number of modes/links
 % P = 10;      %
@@ -21,7 +21,7 @@ Y = GenerateFunctionSpace(X,N,M,L);
 %%
 shp = Shapes(Y,Modes,'L0',L);
 
-shp.E    = 0.05;     % Young's modulus in Mpa
+shp.E    = 0.02;     % Young's modulus in Mpa
 shp.Nu   = 0.33;     % Poisson ratio
 shp.Rho  = 1000e-12; % Density in kg/mm^3
 shp.Zeta = 0.2;      % Damping coefficient
@@ -33,7 +33,7 @@ shp = shp.rebuild();
 %% Object
 xsph = 30;ysph=0; zsph = -30; rsph = 15;
 sp=sSphere(xsph,ysph,-zsph,rsph);
-sp2=sSphere(xsph,ysph,zsph,rsph-3);
+sp2=sSphere(xsph,ysph,zsph,rsph);
 %% Model with contact
 mdl = cModel(shp,'Tstep',H,'Tsim',10);
 mdl.planar = true;
@@ -42,11 +42,12 @@ mdl.pts_per_link = P;
 mdl.object_center = [xsph; ysph; -zsph];
 % mdl.constrained_points = [round(N/8)];
 mdl.constraint_type = "pinned";
-
+mdl.tau = @(M) Controller_2(M,[xsph,ysph,-zsph,rsph]);
 %%
 % mdl.q0(1)    = 0.5;
 % mdl.q0(2)    = -0.5;
 % mdl.q0(3)    = -0.25;
+mdl = mdl.computeEL(mdl.q0);
 mdl = mdl.simulate(); 
 %% 
 figure(100);
@@ -69,6 +70,31 @@ for ii = 1:fps(mdl.Log.t,FPS):length(mdl.Log.q)
     drawnow();
 end
 
+%% setup controller
+function tau = Controller_2(mdl,sphere)
+    n = numel(mdl.Log.q);
+    t = mdl.Log.t;
+    N = mdl.Shapes.NNode;
+    sphere_pos = sphere(1:3).';
+    sphere_r   = sphere(4);
+    % 
+    %tau        = zeros(n,1);
+    % compensate gravity
+    dV_dq = mdl.Log.EL.G + mdl.Log.EL.K*mdl.Log.q;
+%     dV_dq = mdl.Log.EL.K*mdl.Log.q;
+    p = mdl.Log.p;
+    Phi = mdl.Log.Phi;
+    k = 3e-6;
+    body_force = zeros(n,1);
+    for i = round(N/3):N
+        vec = (sphere_pos-p(:,i));
+        dis =norm(vec);
+        tmp = 1/dis*vec*(dis - 0.7*sphere_r);
+        body_force = body_force + mdl.Log.EL.J(:,:,i).'* [zeros(3,1);Phi(:,:,i).'*k*tmp];
+    end
+    
+    tau = dV_dq -2*mdl.Log.EL.M*mdl.Log.dq + body_force - 5*exp(-10*t) * mdl.Log.EL.K*mdl.Log.q;
+end
 
 %%
 function Y = GenerateFunctionSpace(X,N,M,L)

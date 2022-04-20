@@ -9,9 +9,9 @@ classdef cModel
         q, dq, t;
         q0, dq0, Phi0, p0;
         Log;
-        constrained_points; constraint_type;
+        constrained_points; constraint_type;planar;
         tau, tau_;
-        object;object_center;
+        object;object_center;pts_per_link;
     end
     
     properties (Access = private)
@@ -38,7 +38,7 @@ classdef cModel
 methods %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %-------------------------------------------------------------- cModel Class
 function obj = cModel(Shapes,varargin) 
-    
+    obj.planar = false;
     obj.Shapes = Shapes;
     obj.Tstep  = 1/60;
     obj.Tsim   = 10;
@@ -127,11 +127,23 @@ end
 function cModel = computeEL(cModel,Q,varargin)
 
 if isempty(varargin), dQ = Q*0; end    
-    
+cModel.Theta = cModel.Shapes.get('ThetaEval');
+cModel.Xi0 = cModel.Shapes.get('Xi0Eval');    
 % compute Lagrangian entries
 [M_,C_,K_,R_,G_,...
-p_,Phi_,J_,Vg_,Kin_] = computeLagrangian(cModel,Q,dQ);
-    
+p_,Phi_,J_,Vg_,Kin_] = computeLagrangianFast_mex(...
+                                        Q,dQ,... 
+                                        cModel.Shapes.ds,...   
+                                        cModel.p0,... 
+                                        cModel.Phi0,...
+                                        cModel.Xi0,... 
+                                        cModel.Theta,...
+                                        cModel.Shapes.Ba,... 
+                                        cModel.Shapes.Ktt,...
+                                        cModel.Shapes.Mtt,...     
+                                        cModel.Shapes.Zeta,...
+                                        cModel.Shapes.Gvec);      
+                                
 % overwrite dynamics
 %cModel.Log.t  = T;
 cModel.Log.q  = Q;
@@ -184,7 +196,7 @@ end
 
 function [Wt,lambda] = computeConstraints(cModel,Minv,H_)
     % constraint stab constant
-    lambda_stab = 10;
+    lambda_stab = 40;
     %Jacobian
     J_ = cModel.Log.EL.J;
     Jt_= cModel.Log.EL.Jt;
@@ -195,12 +207,27 @@ function [Wt,lambda] = computeConstraints(cModel,Minv,H_)
     sz2 = cModel.Shapes.NDim;
     n_constraint = length(cModel.constrained_points);
     if n_constraint>0
-        if cModel.constraint_type == "pinned"
-            tmp_1 = [zeros(3,3) eye(3)];
-            sz1 = 3;
+        if ~cModel.planar
+            if cModel.constraint_type == "pinned"
+                tmp_1 = [zeros(3,3) eye(3)];
+                sz1 = 3;
+            else
+                sz1 = 6;
+                tmp_1 = eye(6);
+            end
         else
-            sz1 = 6;
-            tmp_1 = eye(6);
+            if cModel.constraint_type == "pinned"
+                sz1 = 2;
+                tmp_1 = zeros(2,6);
+                tmp_1(1,4) = 1;
+                tmp_1(2,6) = 1;
+            else
+                sz1 = 3;
+                tmp_1 = zeros(3,6);
+                tmp_1(1,2) = 1;
+                tmp_1(2,4) = 1;
+                tmp_1(3,6) = 1;
+            end
         end
         tmp_2 = zeros(sz1*n_constraint,sz2);
         tmp_3 = zeros(sz1*n_constraint,sz2);
@@ -217,6 +244,10 @@ function [Wt,lambda] = computeConstraints(cModel,Minv,H_)
 end
 
 function [points,N,D] = checkContact(cModel)
+    P = cModel.pts_per_link;
+%     D_ = cModel.object.eval(cModel.Log.p(:,P:P:end).');
+%     D = D_(:,end);
+%     points = P*find(D<=1.5);
     D_ = cModel.object.eval(cModel.Log.p.');
     D = D_(:,end);
     points = find(D<=1.5);
@@ -243,8 +274,8 @@ function dQ = resetVelo(cModel)
     end
     
     % quadprog
-    M = cModel.Log.EL.M;
-    x = quadprog(M+eye(size(M)),2*cModel.Log.dq.'*M,[],[],Wt,zeros(sz1*n_constraint,1));
+    M = (cModel.Log.EL.M+cModel.Log.EL.M.')/2;
+    x = quadprog(M+1000*eye(size(M)),2*cModel.Log.dq.'*M,[],[],Wt,zeros(sz1*n_constraint,1));
     dQ = cModel.Log.dq + x;
 end
 
@@ -356,23 +387,42 @@ disp('----------------------------------');
         % pre-compute Minverse
         Minv = cModel.Log.EL.M\eye(numel(Q));
         
-        
+        function ret = find_consecutive(A)
+            if size(A,1)~=1
+                A = A.';
+            end
+            B = [find(diff(A)>1) length(A)];
+            ret = mat2cell(A,1,[B(1) diff(B)]);
+        end
         
         % check contact
         [pts,N,D] = cModel.checkContact();
-        
-        if length(pts) > length(cModel.constrained_points)
-            cModel.constrained_points = pts;
-%             dQ = cModel.resetVelo();
-            dQ = cModel.zeroVelo();
+        tmp = find_consecutive(pts);
+        ends = [];
+        for i = 1:length(tmp)
+            min_ = min(tmp{i});
+            max_ = max(tmp{i});
+%             mid_ = round((min_+max_)/2);
+            tmp2 = unique([min_,max_]);
+            ends = [ends tmp2];
+        end
+%         two_ends = pts;
+        if length(ends) ~= length(cModel.constrained_points)
+%             cModel.constrained_points = pts;
+            cModel.constrained_points = ends;
+            dQ = cModel.resetVelo();
+%             dQ = cModel.zeroVelo();
             cModel = cModel.computeMatrices(Q,dQ,T);
             reset = [Q;dQ];
-        elseif pts ~= cModel.constrained_points
-            cModel.constrained_points = pts;
-%             dQ = cModel.resetVelo();
-            dQ = cModel.zeroVelo();
-            cModel = cModel.computeMatrices(Q,dQ,T);
-            reset = [Q;dQ];
+        else
+            if any(ends ~= cModel.constrained_points)
+    %             cModel.constrained_points = pts;
+                cModel.constrained_points = ends;
+                dQ = cModel.resetVelo();
+    %             dQ = cModel.zeroVelo();
+                cModel = cModel.computeMatrices(Q,dQ,T);
+                reset = [Q;dQ];
+            end
         end
         
         % pre-compute H
@@ -678,8 +728,18 @@ Q0  = cModel.q0(:);
 dQ0 = cModel.dq0(:);    
     
 % compute Lagrangian entries
-[M_,C_,K_,R_,G_,p_,Phi_,J_] = computeLagrangian(cModel,Q0,dQ0);
-
+[M_,C_,K_,R_,G_,p_,Phi_,J_] = computeLagrangianFast_mex(...
+            Q0,dQ0,... 
+            cModel.Shapes.ds,...   
+            cModel.p0,... 
+            cModel.Phi0,...
+            cModel.Xi0,... 
+            cModel.Theta,...
+            cModel.Shapes.Ba,... 
+            cModel.Shapes.Ktt,...
+            cModel.Shapes.Mtt,...     
+            cModel.Shapes.Zeta,...
+            cModel.Shapes.Gvec);     
 % overwrite dynamics
 cModel.q  = Q0; 
 cModel.dq = dQ0;
