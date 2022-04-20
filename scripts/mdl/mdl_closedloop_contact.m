@@ -86,7 +86,12 @@ function tau = Controller_2(mdl,sphere)
     Phi = mdl.Log.Phi;
     k = 3e-6;
     body_force = zeros(n,1);
-    for i = round(N/3):N
+    if isempty(mdl.constrained_points)
+        start = round(N/3);
+    else
+        start = max([round(N/3) mdl.constrained_points]);
+    end
+    for i = start:N
         vec = (sphere_pos-p(:,i));
         dis =norm(vec);
         tmp = 1/dis*vec*(dis - 0.7*sphere_r);
