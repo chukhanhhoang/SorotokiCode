@@ -1,8 +1,8 @@
 clr; 
 %% 
 L = 100;  % length of robot
-N = 50;   % number of discrete points on curve
-M = 4;    % number of modes
+N = 80;   % number of discrete points on curve
+M = 3;    % number of modes
 H = 1/125; % timesteps
 FPS = 30; % animation speed
 
@@ -27,7 +27,7 @@ Theta_ = shp.get('ThetaEval');
 Theta = pagemtimes(shp.Ba,Theta_);
 
 %%
-mdl = Model(shp,'Tstep',H,'Tsim',10);
+mdl = Model(shp,'Tstep',H,'Tsim',2.5);
 mdl.gVec = [0;0;0-9.81e3];%-9.81e3
 mdl.q0(1) = -0.25;
 mdl.q0(3) = -0.1;
@@ -119,6 +119,7 @@ end
 
 %% setup controller
 function [tau,F_ob] = Controller_2(mdl,sphere)
+    F_ob = zeros(6,1);
     n = numel(mdl.Log.q);
     t = mdl.Log.t;
     N = mdl.Shapes.NNode;
@@ -137,14 +138,13 @@ function [tau,F_ob] = Controller_2(mdl,sphere)
         body_force = body_force + mdl.Log.EL.J(:,:,i).'* [zeros(3,1);Phi(:,:,i).'*k*(sphere_pos-p(:,i))];
     end
     
-    tau_c = dV_dq -10*mdl.Log.EL.M*mdl.Log.dq + body_force - 5*exp(-10*t) * mdl.Log.EL.K*mdl.Log.q;
-    
+    tau_c = dV_dq -20*mdl.Log.EL.M*mdl.Log.dq + body_force - 5*exp(-10*t) * mdl.Log.EL.K*mdl.Log.q;
+    tau_c(end) = 0;
     tau_o = zeros(n,1);
-    stiffness = -1e-2;
+    stiffness = 1e-3;
     damping = 1e-5;
     rs = sphere_r;
     touch = 0;
-%     F_ob = zeros(6,1);
     for i = 1:N
         vector_from_sphere = p(:,i)-sphere_pos;
         d = norm(vector_from_sphere);
@@ -155,7 +155,7 @@ function [tau,F_ob] = Controller_2(mdl,sphere)
             spatial_velo = isomse3(spatial_velo_twist)*[p(:,i);1];
             dd = spatial_velo(1:3).'*vector_from_sphere;
             damp_force = -damping*(rs-d)^1.1*dd*vector_from_sphere/d;
-            force = (stiffness*(1-rs/d)*vector_from_sphere+damp_force);
+            force = (stiffness*(rs-d)*vector_from_sphere)+damp_force;
             body_force = [zeros(3,1);mdl.Log.Phi(1:3,1:3,i).'*force];
             tau_o = tau_o + mdl.Log.EL.J(:,:,i).' * body_force;
             
@@ -163,11 +163,8 @@ function [tau,F_ob] = Controller_2(mdl,sphere)
         end
     end
     
-    
-    u = (mdl.Log.EL.J(:,:,end).'*diag([0 1 0 1 0 0]))\tau_c;
-    F_ob=u;
 %     res = tau-mdl.Log.EL.J(:,:,end).'*[eye(3);zeros(3)]*u
-    tau = mdl.Log.EL.J(:,:,end).'*diag([0 1 0 1 0 0])*u+tau_o;
+    tau = tau_c+tau_o;
 %     tau(3:end) = 0;
 end
 

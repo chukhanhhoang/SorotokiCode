@@ -1,12 +1,12 @@
 clr; 
 %% 
 L = 100;  % length of robot
-N = 40;   % number of discrete points on curve
-M = 3;    % number of modes
+N = 80;   % number of discrete points on curve
+M = 4;    % number of modes
 H = 1/125; % timesteps
 FPS = 30; % animation speed
 
-Modes = [0,M,M,0,0,0];  % pure-XY curvature
+Modes = [0,M,0,0,0,0];  % pure-XY curvature
 %%
 
 % generate nodal space
@@ -25,8 +25,8 @@ Theta_ = shp.get('ThetaEval');
 Theta = pagemtimes(shp.Ba,Theta_);
 
 %%
-mdl = Model(shp,'Tstep',H,'Tsim',25);
-mdl.gVec = [0;0;-9.81e3];
+mdl = Model(shp,'Tstep',H,'Tsim',2);
+mdl.gVec = [0;0;0];
 % mdl = mdl.computeEL(mdl.q0);
 
 
@@ -35,7 +35,7 @@ mdl.q0(1)   = 0.0;
 mdl = mdl.computeEL(mdl.q0);
 
 %% find final config
-x=10;y=-10;z=-10;
+x=10;y=0;z=-10;
 gd = SE3(roty(pi/4), [x;y;z]);
 % b = isomse3(logmapSE3(shp.get('g0')\gd) - L*isomse3(shp.xia0));
 % control_point = L;
@@ -135,6 +135,7 @@ function [tau,error] = Controller(mdl,qd)
     dV_dq = mdl.Log.EL.G + mdl.Log.EL.K*mdl.Log.q;
     dVd_dq = mdl.Log.EL.K*(mdl.Log.q-qd);
     tau = dV_dq-dVd_dq-4*mdl.Log.EL.M*mdl.Log.dq;
+    tau(end-1:end)=0;
 end
 
 %% setup rig
