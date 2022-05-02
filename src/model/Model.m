@@ -8,7 +8,7 @@ classdef Model
         q, dq, t;
         q0, dq0, Phi0, p0;
         Log;
-   
+        constrained_points; constraint_type;
         tau, tau_;
         update;
     end
@@ -16,8 +16,8 @@ classdef Model
     properties (Access = private)
         N; S;
         dTaudq, dTauddq;
-        Theta;
-        Xi0;
+        
+        Xi0;Theta;
         
         MexSolver = true;
         
@@ -214,6 +214,40 @@ p   = p(end,:).';
 eta = Jacob*dQ(:);
 end
 
+function [Wt,lambda] = computeConstraints(Model,Minv,H_)
+    % constraint stab constant
+    lambda_stab = 20;
+    %Jacobian
+    J_ = Model.Log.EL.J;
+    Jt_= Model.Log.EL.Jt;
+    % dq
+    dQ = Model.Log.dq;
+    
+    %compute
+    sz2 = Model.Shapes.NDim;
+    n_constraint = length(Model.constrained_points);
+    if n_constraint>0
+        if Model.constraint_type == "pinned"
+            tmp_1 = [zeros(3,3) eye(3)];
+            sz1 = 3;
+        else
+            sz1 = 6;
+            tmp_1 = eye(6);
+        end
+        tmp_2 = zeros(sz1*n_constraint,sz2);
+        tmp_3 = zeros(sz1*n_constraint,sz2);
+
+        for i = 1:n_constraint
+            tmp_2((i-1)*sz1+1:i*sz1,:) =tmp_1* J_(:,:,Model.constrained_points(i));
+            tmp_3((i-1)*sz1+1:i*sz1,:) =tmp_1*Jt_(:,:,Model.constrained_points(i));
+        end
+        Wt = tmp_2;
+        wbar = tmp_3*dQ;
+        wbar_stab = wbar+lambda_stab*(Wt*dQ);
+        lambda = (Wt*Minv*Wt.')\(Wt*Minv*(H_ - Model.tau_) - wbar_stab);
+    end
+end
+
 end
 %--------------------------------------------------------------------------
 methods (Access = private) %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -303,14 +337,16 @@ disp('----------------------------------');
         n  = Model.Shapes.NDim;
         Q  = Z(1:n);
         dQ = Z(n+1:2*n);
-       
+        if abs(T-1)<=0.01
+            dQ = zeros(n,1);
+        end
         % compute Lagrangian entries
         if ~Model.MexSolver
             [M_,C_,K_,R_,G_,...
                 p_,Phi_,J_,Vg_,Kin_] = computeLagrangian(Model,Q,dQ);
         else
             [M_,C_,K_,R_,G_,...
-                p_,Phi_,J_,Vg_,Kin_] = computeLagrangianFast_mex(...
+                p_,Phi_,J_,Jt_,Vg_,Kin_] = computeLagrangianFast_mex(...
                 Q,dQ,... 
                 Model.Shapes.ds,...   
                 Model.p0,... 
@@ -340,6 +376,7 @@ disp('----------------------------------');
         Model.Log.EL.K = K_;
         Model.Log.EL.G = G_;
         Model.Log.EL.J = J_;
+        Model.Log.EL.Jt= Jt_;
 
         Model.Log.Psi = Psi;
         Model.Log.Vg  = Vg_;
@@ -354,11 +391,20 @@ disp('----------------------------------');
         % pre-compute Minverse
         Minv = M_\eye(numel(Q));
         
+        % pre-compute H
+        H_ = C_*dQ + K_*Q + R_*dQ + G_;
+        
+        % compute constraints
+        if ~isempty(Model.constrained_points)
+            [Wt,lambda] = Model.computeConstraints(Minv,H_);
+        else
+            Wt = 0;
+            lambda = 0;
+        end
+        
         % flow field
         f = [dQ; ...
-             Minv*(Model.tau_ - Model.Log.EL.C*dQ - ...
-             Model.Log.EL.K*Q - Model.Log.EL.R*dQ - ...
-             Model.Log.EL.G)];
+             Minv*(Model.tau_ - H_+ Wt.'*lambda)];
     end
     
 end
