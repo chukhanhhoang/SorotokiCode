@@ -387,43 +387,43 @@ disp('----------------------------------');
         % pre-compute Minverse
         Minv = cModel.Log.EL.M\eye(numel(Q));
         
-        function ret = find_consecutive(A)
-            if size(A,1)~=1
-                A = A.';
-            end
-            B = [find(diff(A)>1) length(A)];
-            ret = mat2cell(A,1,[B(1) diff(B)]);
-        end
-        
-        % check contact
-        [pts,N,D] = cModel.checkContact();
-        tmp = find_consecutive(pts);
-        ends = [];
-        for i = 1:length(tmp)
-            min_ = min(tmp{i});
-            max_ = max(tmp{i});
-%             mid_ = round((min_+max_)/2);
-            tmp2 = unique([min_,max_]);
-            ends = [ends tmp2];
-        end
-%         two_ends = pts;
-        if length(ends) ~= length(cModel.constrained_points)
-%             cModel.constrained_points = pts;
-            cModel.constrained_points = ends;
-            dQ = cModel.resetVelo();
-%             dQ = cModel.zeroVelo();
-            cModel = cModel.computeMatrices(Q,dQ,T);
-            reset = [Q;dQ];
-        else
-            if any(ends ~= cModel.constrained_points)
-    %             cModel.constrained_points = pts;
-                cModel.constrained_points = ends;
-                dQ = cModel.resetVelo();
-    %             dQ = cModel.zeroVelo();
-                cModel = cModel.computeMatrices(Q,dQ,T);
-                reset = [Q;dQ];
-            end
-        end
+%         function ret = find_consecutive(A)
+%             if size(A,1)~=1
+%                 A = A.';
+%             end
+%             B = [find(diff(A)>1) length(A)];
+%             ret = mat2cell(A,1,[B(1) diff(B)]);
+%         end
+%         
+%         % check contact
+%         [pts,N,D] = cModel.checkContact();
+%         tmp = find_consecutive(pts);
+%         ends = [];
+%         for i = 1:length(tmp)
+%             min_ = min(tmp{i});
+%             max_ = max(tmp{i});
+% %             mid_ = round((min_+max_)/2);
+%             tmp2 = unique([min_,max_]);
+%             ends = [ends tmp2];
+%         end
+% %         two_ends = pts;
+%         if length(ends) ~= length(cModel.constrained_points)
+% %             cModel.constrained_points = pts;
+%             cModel.constrained_points = ends;
+%             dQ = cModel.resetVelo();
+% %             dQ = cModel.zeroVelo();
+%             cModel = cModel.computeMatrices(Q,dQ,T);
+%             reset = [Q;dQ];
+%         else
+%             if any(ends ~= cModel.constrained_points)
+%     %             cModel.constrained_points = pts;
+%                 cModel.constrained_points = ends;
+%                 dQ = cModel.resetVelo();
+%     %             dQ = cModel.zeroVelo();
+%                 cModel = cModel.computeMatrices(Q,dQ,T);
+%                 reset = [Q;dQ];
+%             end
+%         end
         
         % pre-compute H
         H_ = cModel.Log.EL.C*dQ + cModel.Log.EL.K*Q + cModel.Log.EL.R*dQ + cModel.Log.EL.G;

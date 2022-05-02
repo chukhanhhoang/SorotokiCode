@@ -28,8 +28,8 @@ void mexFunction(int32_T nlhs, mxArray *plhs[], int32_T nrhs,
 
 emlrtCTX mexFunctionCreateRootTLS(void)
 {
-  emlrtCreateRootTLSR2021a(&emlrtRootTLSGlobal, &emlrtContextGlobal, NULL, 1,
-                           NULL);
+  emlrtCreateRootTLSR2022a(&emlrtRootTLSGlobal, &emlrtContextGlobal, NULL, 1,
+                           NULL, (const char_T *)"UTF-8", true);
   return emlrtRootTLSGlobal;
 }
 

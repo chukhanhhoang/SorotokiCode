@@ -1,9 +1,9 @@
 ###########################################################################
-## Makefile generated for component 'computeLagrangianFast'. 
+## Makefile generated for component 'computeForwardKinematicsFast'. 
 ## 
-## Makefile     : computeLagrangianFast_rtw.mk
-## Generated on : Mon May 02 11:16:33 2022
-## Final product: ./computeLagrangianFast.a
+## Makefile     : computeForwardKinematicsFast_rtw.mk
+## Generated on : Mon May 02 11:15:54 2022
+## Final product: ./computeForwardKinematicsFast.a
 ## Product type : static-library
 ## 
 ###########################################################################
@@ -17,12 +17,12 @@
 # MAKEFILE                Name of this makefile
 # MODELLIB                Static library target
 
-PRODUCT_NAME              = computeLagrangianFast
-MAKEFILE                  = computeLagrangianFast_rtw.mk
+PRODUCT_NAME              = computeForwardKinematicsFast
+MAKEFILE                  = computeForwardKinematicsFast_rtw.mk
 MATLAB_ROOT               = /home/hoang/MatlabInstallation
 MATLAB_BIN                = /home/hoang/MatlabInstallation/bin
 MATLAB_ARCH_BIN           = $(MATLAB_BIN)/glnxa64
-START_DIR                 = /home/hoang/2022/SorotokiCode/src/model/mex/lagrangian
+START_DIR                 = /home/hoang/2022/SorotokiCode/src/model/mex/forwardkin
 TGT_FCN_LIB               = ISO_C
 SOLVER_OBJ                = 
 CLASSIC_INTERFACE         = 0
@@ -30,7 +30,7 @@ MODEL_HAS_DYNAMICALLY_LOADED_SFCNS =
 RELATIVE_PATH_TO_ANCHOR   = ../../..
 C_STANDARD_OPTS           = -fwrapv
 CPP_STANDARD_OPTS         = -fwrapv
-MODELLIB                  = computeLagrangianFast.a
+MODELLIB                  = computeForwardKinematicsFast.a
 
 ###########################################################################
 ## TOOLCHAIN SPECIFICATIONS
@@ -142,7 +142,7 @@ SHAREDLIB_LDFLAGS    = -shared -Wl,--no-undefined
 ## OUTPUT INFO
 ###########################################################################
 
-PRODUCT = ./computeLagrangianFast.a
+PRODUCT = ./computeForwardKinematicsFast.a
 PRODUCT_TYPE = "static-library"
 BUILD_TYPE = "Static Library"
 
@@ -150,7 +150,7 @@ BUILD_TYPE = "Static Library"
 ## INCLUDE PATHS
 ###########################################################################
 
-INCLUDES_BUILDINFO = -I$(START_DIR)/codegen/lib/computeLagrangianFast -I$(START_DIR) -I$(MATLAB_ROOT)/extern/include
+INCLUDES_BUILDINFO = -I$(START_DIR)/codegen/lib/computeForwardKinematicsFast -I$(START_DIR) -I$(MATLAB_ROOT)/extern/include
 
 INCLUDES = $(INCLUDES_BUILDINFO)
 
@@ -159,7 +159,7 @@ INCLUDES = $(INCLUDES_BUILDINFO)
 ###########################################################################
 
 DEFINES_CUSTOM = 
-DEFINES_STANDARD = -DMODEL=computeLagrangianFast
+DEFINES_STANDARD = -DMODEL=computeForwardKinematicsFast
 
 DEFINES = $(DEFINES_CUSTOM) $(DEFINES_STANDARD)
 
@@ -167,7 +167,7 @@ DEFINES = $(DEFINES_CUSTOM) $(DEFINES_STANDARD)
 ## SOURCE FILES
 ###########################################################################
 
-SRCS = $(START_DIR)/codegen/lib/computeLagrangianFast/computeLagrangianFast_data.c $(START_DIR)/codegen/lib/computeLagrangianFast/computeLagrangianFast_initialize.c $(START_DIR)/codegen/lib/computeLagrangianFast/computeLagrangianFast_terminate.c $(START_DIR)/codegen/lib/computeLagrangianFast/computeLagrangianFast.c $(START_DIR)/codegen/lib/computeLagrangianFast/mtimes.c $(START_DIR)/codegen/lib/computeLagrangianFast/computeLagrangianFast_emxutil.c $(START_DIR)/codegen/lib/computeLagrangianFast/computeLagrangianFast_emxAPI.c
+SRCS = $(START_DIR)/codegen/lib/computeForwardKinematicsFast/computeForwardKinematicsFast_data.c $(START_DIR)/codegen/lib/computeForwardKinematicsFast/computeForwardKinematicsFast_initialize.c $(START_DIR)/codegen/lib/computeForwardKinematicsFast/computeForwardKinematicsFast_terminate.c $(START_DIR)/codegen/lib/computeForwardKinematicsFast/computeForwardKinematicsFast.c $(START_DIR)/codegen/lib/computeForwardKinematicsFast/computeForwardKinematicsFast_emxutil.c $(START_DIR)/codegen/lib/computeForwardKinematicsFast/computeForwardKinematicsFast_emxAPI.c
 
 ALL_SRCS = $(SRCS)
 
@@ -175,7 +175,7 @@ ALL_SRCS = $(SRCS)
 ## OBJECTS
 ###########################################################################
 
-OBJS = computeLagrangianFast_data.o computeLagrangianFast_initialize.o computeLagrangianFast_terminate.o computeLagrangianFast.o mtimes.o computeLagrangianFast_emxutil.o computeLagrangianFast_emxAPI.o
+OBJS = computeForwardKinematicsFast_data.o computeForwardKinematicsFast_initialize.o computeForwardKinematicsFast_terminate.o computeForwardKinematicsFast.o computeForwardKinematicsFast_emxutil.o computeForwardKinematicsFast_emxAPI.o
 
 ALL_OBJS = $(OBJS)
 
@@ -282,11 +282,11 @@ $(PRODUCT) : $(OBJS) $(PREBUILT_OBJS)
 	$(CPP) $(CPPFLAGS) -o "$@" "$<"
 
 
-%.o : $(START_DIR)/codegen/lib/computeLagrangianFast/%.c
+%.o : $(START_DIR)/codegen/lib/computeForwardKinematicsFast/%.c
 	$(CC) $(CFLAGS) -o "$@" "$<"
 
 
-%.o : $(START_DIR)/codegen/lib/computeLagrangianFast/%.cpp
+%.o : $(START_DIR)/codegen/lib/computeForwardKinematicsFast/%.cpp
 	$(CPP) $(CPPFLAGS) -o "$@" "$<"
 
 
@@ -298,31 +298,27 @@ $(PRODUCT) : $(OBJS) $(PREBUILT_OBJS)
 	$(CPP) $(CPPFLAGS) -o "$@" "$<"
 
 
-computeLagrangianFast_data.o : $(START_DIR)/codegen/lib/computeLagrangianFast/computeLagrangianFast_data.c
+computeForwardKinematicsFast_data.o : $(START_DIR)/codegen/lib/computeForwardKinematicsFast/computeForwardKinematicsFast_data.c
 	$(CC) $(CFLAGS) -o "$@" "$<"
 
 
-computeLagrangianFast_initialize.o : $(START_DIR)/codegen/lib/computeLagrangianFast/computeLagrangianFast_initialize.c
+computeForwardKinematicsFast_initialize.o : $(START_DIR)/codegen/lib/computeForwardKinematicsFast/computeForwardKinematicsFast_initialize.c
 	$(CC) $(CFLAGS) -o "$@" "$<"
 
 
-computeLagrangianFast_terminate.o : $(START_DIR)/codegen/lib/computeLagrangianFast/computeLagrangianFast_terminate.c
+computeForwardKinematicsFast_terminate.o : $(START_DIR)/codegen/lib/computeForwardKinematicsFast/computeForwardKinematicsFast_terminate.c
 	$(CC) $(CFLAGS) -o "$@" "$<"
 
 
-computeLagrangianFast.o : $(START_DIR)/codegen/lib/computeLagrangianFast/computeLagrangianFast.c
+computeForwardKinematicsFast.o : $(START_DIR)/codegen/lib/computeForwardKinematicsFast/computeForwardKinematicsFast.c
 	$(CC) $(CFLAGS) -o "$@" "$<"
 
 
-mtimes.o : $(START_DIR)/codegen/lib/computeLagrangianFast/mtimes.c
+computeForwardKinematicsFast_emxutil.o : $(START_DIR)/codegen/lib/computeForwardKinematicsFast/computeForwardKinematicsFast_emxutil.c
 	$(CC) $(CFLAGS) -o "$@" "$<"
 
 
-computeLagrangianFast_emxutil.o : $(START_DIR)/codegen/lib/computeLagrangianFast/computeLagrangianFast_emxutil.c
-	$(CC) $(CFLAGS) -o "$@" "$<"
-
-
-computeLagrangianFast_emxAPI.o : $(START_DIR)/codegen/lib/computeLagrangianFast/computeLagrangianFast_emxAPI.c
+computeForwardKinematicsFast_emxAPI.o : $(START_DIR)/codegen/lib/computeForwardKinematicsFast/computeForwardKinematicsFast_emxAPI.c
 	$(CC) $(CFLAGS) -o "$@" "$<"
 
 

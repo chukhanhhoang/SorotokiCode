@@ -1,7 +1,7 @@
 clr; beep off;
 %% settings
-L = 1;   % manipulator length
-M = 8;   % number of modes
+L = 0.22;   % manipulator length
+M = 4;   % number of modes
 N = 101; % grid on SR
 
 %% build basis
@@ -9,15 +9,16 @@ x = linspace(0,1,N).';
 Y = GenerateFunctionSpace(x,N,M,L);
 
 %% desired SE3
-Sd = sCircle(0.1,-0.3,0.1);  % desired enveloping SDF
-sp = sSphere(0.1,0,0.3,0.1); % offset due to occupance of soft arm
+Sd = sCircle(0.06,0.06,0.04);  % desired enveloping SDF
+sp = sSphere(0.06,0,0.06,0.04); % offset due to occupance of soft arm
 
 %% soft sobotics shapes
 figure(101); subplot(1,2,1);
-shp = Shapes(Y,[0,M,0,0,0,0]);      % generate basis
+shp = Shapes(Y,[0,M,0,0,0,0],'L0',L);      % generate basis
 rig = setupRig(M,L,[0,M,0,0,0,0]);  % rig the soft arm
 
-q = 1e-4*sort(rand(shp.NDim,1));
+% q = 1e-4*sort(rand(shp.NDim,1));
+q = zeros(shp.NDim,1)
 e = 0.1;
 
 %% solve IK
@@ -25,13 +26,13 @@ obj = Gmodel(sp);
 obj.Texture = diffuse(0.925);
 obj.bake.render();
 
-BdBox = [-0.1,0.4,-0.2,0.2,0,0.6];
+BdBox = [-0.1,0.1,-0.125,0.05,0,0.2];
 
 h = [];
 EE = [];
 k  = 0;
 
-while norm(e) > 1e-3 && k < 400
+while norm(e) > 1.32e-2 && k < 400
     
     % update iteration
     k = k + 1;
@@ -54,10 +55,11 @@ while norm(e) > 1e-3 && k < 400
     A = [];
     b = [];
     
-    for ii = 1:shp.NNode
+    for ii = round(shp.NNode/5):shp.NNode
         
         pd = [XY(ii,1);0;XY(ii,2)];
-        Rd = [T(ii,1),B(ii,1),N(ii,1);
+        Rd = ...%rotz(ii/shp.NNode*2*pi)*...
+            -[T(ii,1),B(ii,1),N(ii,1);
               T(ii,3),B(ii,3),N(ii,3);
               T(ii,2),B(ii,2),N(ii,2)];
         
@@ -84,11 +86,11 @@ while norm(e) > 1e-3 && k < 400
     
     hold on;
     if isempty(h)
-        h = plot3(p(:,1),p(:,2),-p(:,3),'b-','LineW',3);
+        h = plot3(p(:,1),p(:,2),p(:,3),'b-','LineW',3);
     else
         set(h,'XData',p(:,1));
         set(h,'YData',p(:,2));
-        set(h,'ZData',-p(:,3));
+        set(h,'ZData',p(:,3));
     end
     
     subplot(1,2,2);
@@ -97,16 +99,16 @@ while norm(e) > 1e-3 && k < 400
     drawnow;
     
     % compute update state and compute error
-    q = q + dq;
+    q = q + real(dq);
     e = norm(abs(dq));
      
 end
 
 function [dq, E] = EnergyController(g,gd,J)
     
-    k1   = 0.002;
-    k2   = 0.075;
-    lam1 = 1;
+    k1   = 0.003;
+    k2   = 10;
+    lam1 = 5;
     
     % conditioner
     W  = 1;
@@ -149,7 +151,7 @@ rig = rig.parent(1,0,0);
 rig = rig.parent(1,1,1);
 
 rig    = rig.texture(1,1.1*base);
-rig.g0 = SE3(roty(pi/2),zeros(3,1));
+rig.g0 = SE3(roty(pi/2)*rotz(pi),zeros(3,1));
 
 rig = rig.render();
 
@@ -162,8 +164,8 @@ function Y = GenerateFunctionSpace(X,N,M,L)
 Y = zeros(N,M);
 
 for ii = 1:M
-   %Y(:,ii) = chebyshev(X/L,ii-1); % chebyshev
-   Y(:,ii) = pcc(X/L,ii,M); %chebyshev(X/L,ii-1); % chebyshev
+   Y(:,ii) = chebyshev(X/L,ii-1); % chebyshev
+%    Y(:,ii) = pcc(X/L,ii,M); %chebyshev(X/L,ii-1); % chebyshev
 end
 
 % ensure its orthonormal (gram–schmidt)

@@ -3,7 +3,7 @@ clr;
 L = 100;   % length of robot
 M = 5;     % number of modes
 N = 100;    % number of discrete points on curve
-H = 1/60;  % timesteps
+H = 1/100;  % timesteps
 FPS = 30;  % animation speed
 
 Modes = [0,M,M,0,0,0];  % pure-XY curvature
@@ -23,7 +23,7 @@ shp.Zeta = 0.001;     % Damping coefficient
 shp = shp.rebuild();
 
 %% build model class
-mdl = Model(shp,'Tstep',H,'Tsim',15);
+mdl = cModel(shp,'Tstep',H,'Tsim',15);
 
 %% controller
 mdl.tau = @(M) Controller(M);
@@ -77,14 +77,14 @@ function tau = Controller(mdl)
 t = mdl.Log.t;
 
 %tau        = zeros(n,1);
-J = mdl.Log.EL.J;
-ge = SE3(mdl.Log.Phi,mdl.Log.p);
+J = mdl.Log.EL.J(:,:,end);
+ge = SE3(mdl.Log.Phi(:,:,end),mdl.Log.p(:,end));
 %gd = SE3(roty(pi/2*t),[50,50*cos(t),50*sin(t)]);
 gd = gref(t);
 
-k1 = 0.05;
+k1 = 0.0;
 k2 = 15;
-lam1 = 1;
+lam1 = 2;
 lam2 = 1;
 Kp = diag([k1,k1,k1,k2,k2,k2]);
 
