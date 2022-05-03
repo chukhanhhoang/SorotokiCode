@@ -1,15 +1,15 @@
 clr; 
 %% 
-L = 100;  % length of robot
+L = 0.22;  % length of robot
 N = 80;   % number of discrete points on curve
-M = 3;    % number of modes
+M = 6;    % number of modes
 H = 1/125; % timesteps
 FPS = 30; % animation speed
 
 Modes = [0,M,0,0,0,0];  % pure-XY curvature
 %%Object
-obj_param = [40,0,-20,14];
-obj = sSphere(obj_param(1),obj_param(2),obj_param(3),obj_param(4));
+Sd = sCircle(0.06,0.06,0.04);  % desired enveloping SDF
+obj = sSphere(0.06,0,0.06,0.04); % offset due to occupance of soft arm
 obj_gmodel = Gmodel(obj);
 % generate nodal space
 X = linspace(0,L,N)';
@@ -27,19 +27,16 @@ Theta_ = shp.get('ThetaEval');
 Theta = pagemtimes(shp.Ba,Theta_);
 
 %%
-mdl = cModel(shp,'Tstep',H,'Tsim',10);
+mdl = cModel(shp,'Tstep',H,'Tsim',4);
 % mdl.gVec = [0;0;0-9.81e3];%-9.81e3
 mdl.q0(1) = 0;
 mdl.q0(3) = 0;
 mdl = mdl.computeEL(mdl.q0);
 
-
-%%
-mdl = mdl.computeEL(mdl.q0);
-
 % find final config
 tic
-qd = find_qd_from_obj(mdl,obj);
+% qd = find_qd_from_obj(mdl,obj);
+qd = shape_optim(mdl,obj,Sd);
 toc
 p = shp.FK(qd);
 
