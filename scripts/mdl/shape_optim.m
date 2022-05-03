@@ -76,7 +76,7 @@ while norm(e) > 1.32e-2 && k < 400
 %     drawnow;
     
     % compute update state and compute error
-    q = q + real(dq);
+    q = q + mdl.G_u*pinv(mdl.G_u)*real(dq);
     e = norm(abs(dq));
      
 end

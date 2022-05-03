@@ -30,13 +30,15 @@ Theta = pagemtimes(shp.Ba,Theta_);
 mdl = cModel(shp,'Tstep',H,'Tsim',4);
 % mdl.gVec = [0;0;0-9.81e3];%-9.81e3
 mdl.q0(1) = 0;
-mdl.q0(3) = 0;
+mdl.q0(3:end) = 2*rand(shp.NDim-2,1);
 mdl = mdl.computeEL(mdl.q0);
-
+mdl.G_u = eye(numel(mdl.q0));
+mdl.G_u(:,end-3:end) = [];
 % find final config
 tic
 % qd = find_qd_from_obj(mdl,obj);
 qd = shape_optim(mdl,obj,Sd);
+% qd = nonl_dist_optim(mdl,qd);
 toc
 p = shp.FK(qd);
 
@@ -218,7 +220,7 @@ function [tau,error] = Controller_qd(mdl,qd)
     error = mdl.Log.q-qd;
     dV_dq = mdl.Log.EL.G + mdl.Log.EL.K*mdl.Log.q;
     dVd_dq = mdl.Log.EL.K*(mdl.Log.q-qd);
-    tau = dV_dq-dVd_dq-8*mdl.Log.EL.M*mdl.Log.dq;
+    tau = mdl.G_u*pinv(mdl.G_u)*(dV_dq-dVd_dq-8*mdl.Log.EL.M*mdl.Log.dq);
 end
 
 %% setup rig
