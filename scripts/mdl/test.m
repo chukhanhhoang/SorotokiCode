@@ -3,13 +3,13 @@ clr;
 L = 0.22;  % length of robot
 N = 80;   % number of discrete points on curve
 M = 6;    % number of modes
-H = 1/125; % timesteps
-FPS = 30; % animation speed
+H = 1/100; % timesteps
+FPS = 10; % animation speed
 
 Modes = [0,M,0,0,0,0];  % pure-XY curvature
 %%Object
-Sd = sCircle(0.06,0.06,0.04);  % desired enveloping SDF
-obj = sSphere(0.06,0,0.06,0.04); % offset due to occupance of soft arm
+Sd = sCircle(0.06,-0.06,0.04);  % desired enveloping SDF
+obj = sSphere(0.06,0,-0.06,0.04); % offset due to occupance of soft arm
 obj_gmodel = Gmodel(obj);
 % generate nodal space
 X = linspace(0,L,N)';
@@ -17,28 +17,28 @@ Y = GenerateFunctionSpace(X,N,M,L);
 
 %%
 shp = Shapes(Y,Modes,'L0',L);
-shp.E    = 2.00;     % Young's modulus in Mpa
+shp.E    = 5.00;     % Young's modulus in Mpa
 shp.Nu   = 0.49;     % Poisson ratio
-shp.Rho  = 1000e-12; % Density in kg/mm^3
+shp.Rho  = 100; % Density in kg/m^3
 shp.Zeta = 0.1;      % Damping coefficient
-
+shp.Gvec = [0;0;9.81];
 shp = shp.rebuild();
 Theta_ = shp.get('ThetaEval');
 Theta = pagemtimes(shp.Ba,Theta_);
 
 %%
-mdl = cModel(shp,'Tstep',H,'Tsim',4);
+mdl = cModel(shp,'Tstep',H,'Tsim',6);
 % mdl.gVec = [0;0;0-9.81e3];%-9.81e3
 mdl.q0(1) = 0;
 mdl.q0(3:end) = 2*rand(shp.NDim-2,1);
 mdl = mdl.computeEL(mdl.q0);
 mdl.G_u = eye(numel(mdl.q0));
-mdl.G_u(:,end-3:end) = [];
+mdl.G_u(:,end-2:end) = [];
 % find final config
 tic
 % qd = find_qd_from_obj(mdl,obj);
 qd = shape_optim(mdl,obj,Sd);
-% qd = nonl_dist_optim(mdl,qd);
+qd = nonl_dist_optim(mdl,qd);
 toc
 p = shp.FK(qd);
 
@@ -220,7 +220,7 @@ function [tau,error] = Controller_qd(mdl,qd)
     error = mdl.Log.q-qd;
     dV_dq = mdl.Log.EL.G + mdl.Log.EL.K*mdl.Log.q;
     dVd_dq = mdl.Log.EL.K*(mdl.Log.q-qd);
-    tau = mdl.G_u*pinv(mdl.G_u)*(dV_dq-dVd_dq-8*mdl.Log.EL.M*mdl.Log.dq);
+    tau = mdl.G_u*pinv(mdl.G_u)*(dV_dq-dVd_dq-3*mdl.Log.EL.M*mdl.Log.dq);
 end
 
 %% setup rig
