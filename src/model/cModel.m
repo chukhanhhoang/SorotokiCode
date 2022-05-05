@@ -443,7 +443,7 @@ disp('----------------------------------');
 %         end
         
         % pre-compute H
-        H_ = cModel.Log.EL.C*dQ + cModel.Log.EL.K*Q + cModel.Log.EL.R*dQ + cModel.Log.EL.G;
+        H_ = cModel.Log.EL.C*dQ + cModel.Log.EL.K*Q + cModel.Log.EL.R*dQ - cModel.Log.EL.G;
         % compute constraints
         if ~isempty(cModel.constrained_points)
             [Wt,lambda] = cModel.computeConstraints(Minv,H_);

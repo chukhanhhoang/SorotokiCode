@@ -60,13 +60,13 @@ static void LagrangianODEX(const emxArray_real_T *x, const emxArray_real_T *dx,
   double A[36];
   double Ai[36];
   double adV[36];
-  double b_Ai[36];
+  double b_A[36];
   double Phi_[9];
-  double Rt[9];
-  double dv[9];
+  double Rt_tmp[9];
+  double Wh[9];
   double V[6];
   double XI[6];
-  double dv1[6];
+  double dv[6];
   double y[6];
   const double *Ba_data;
   const double *Theta_data;
@@ -173,19 +173,19 @@ static void LagrangianODEX(const emxArray_real_T *x, const emxArray_real_T *dx,
     A[6 * n + 2] = bkj;
     A[inner + 5] = bkj;
   }
-  dv[0] = 0.0;
-  dv[3] = -Z1_data[20];
-  dv[6] = Z1_data[19];
-  dv[1] = Z1_data[20];
-  dv[4] = 0.0;
-  dv[7] = -Z1_data[18];
-  dv[2] = -Z1_data[19];
-  dv[5] = Z1_data[18];
-  dv[8] = 0.0;
+  Wh[0] = 0.0;
+  Wh[3] = -Z1_data[20];
+  Wh[6] = Z1_data[19];
+  Wh[1] = Z1_data[20];
+  Wh[4] = 0.0;
+  Wh[7] = -Z1_data[18];
+  Wh[2] = -Z1_data[19];
+  Wh[5] = Z1_data[18];
+  Wh[8] = 0.0;
   for (n = 0; n < 3; n++) {
-    bkj = dv[n];
-    d = dv[n + 3];
-    d1 = dv[n + 6];
+    bkj = Wh[n];
+    d = Wh[n + 3];
+    d1 = Wh[n + 6];
     for (nc = 0; nc < 3; nc++) {
       A[(n + 6 * nc) + 3] =
           (bkj * Phi_[3 * nc] + d * Phi_[3 * nc + 1]) + d1 * Phi_[3 * nc + 2];
@@ -194,41 +194,41 @@ static void LagrangianODEX(const emxArray_real_T *x, const emxArray_real_T *dx,
   /* --------------------------------------------------------------------------
    */
   for (n = 0; n < 3; n++) {
-    Rt[3 * n] = Phi_[n];
-    Rt[3 * n + 1] = Phi_[n + 3];
-    Rt[3 * n + 2] = Phi_[n + 6];
+    Rt_tmp[3 * n] = Phi_[n];
+    Rt_tmp[3 * n + 1] = Phi_[n + 3];
+    Rt_tmp[3 * n + 2] = Phi_[n + 6];
   }
   /* --------------------------------------------------------------------------
    */
   memset(&Ai[0], 0, 36U * sizeof(double));
   for (n = 0; n < 3; n++) {
-    bkj = Rt[3 * n];
+    bkj = Rt_tmp[3 * n];
     Ai[6 * n] = bkj;
     inner = 6 * (n + 3);
     Ai[inner + 3] = bkj;
-    bkj = Rt[3 * n + 1];
+    bkj = Rt_tmp[3 * n + 1];
     Ai[6 * n + 1] = bkj;
     Ai[inner + 4] = bkj;
-    bkj = Rt[3 * n + 2];
+    bkj = Rt_tmp[3 * n + 2];
     Ai[6 * n + 2] = bkj;
     Ai[inner + 5] = bkj;
   }
-  dv[0] = 0.0;
-  dv[1] = -Z1_data[20];
-  dv[2] = Z1_data[19];
-  dv[3] = Z1_data[20];
-  dv[4] = 0.0;
-  dv[5] = -Z1_data[18];
-  dv[6] = -Z1_data[19];
-  dv[7] = Z1_data[18];
-  dv[8] = 0.0;
+  Wh[0] = 0.0;
+  Wh[1] = -Z1_data[20];
+  Wh[2] = Z1_data[19];
+  Wh[3] = Z1_data[20];
+  Wh[4] = 0.0;
+  Wh[5] = -Z1_data[18];
+  Wh[6] = -Z1_data[19];
+  Wh[7] = Z1_data[18];
+  Wh[8] = 0.0;
   for (n = 0; n < 3; n++) {
-    bkj = Rt[n];
-    d = Rt[n + 3];
-    d1 = Rt[n + 6];
+    bkj = Rt_tmp[n];
+    d = Rt_tmp[n + 3];
+    d1 = Rt_tmp[n + 6];
     for (nc = 0; nc < 3; nc++) {
       Ai[(n + 6 * nc) + 3] =
-          (bkj * dv[3 * nc] + d * dv[3 * nc + 1]) + d1 * dv[3 * nc + 2];
+          (bkj * Wh[3 * nc] + d * Wh[3 * nc + 1]) + d1 * Wh[3 * nc + 2];
     }
   }
   emxInit_real_T(&Jg, 2);
@@ -265,26 +265,26 @@ static void LagrangianODEX(const emxArray_real_T *x, const emxArray_real_T *dx,
   memset(&adV[0], 0, 36U * sizeof(double));
   /* --------------------------------------------------------------------------
    */
-  Rt[0] = 0.0;
-  Rt[3] = -V[2];
-  Rt[6] = V[1];
-  Rt[1] = V[2];
-  Rt[4] = 0.0;
-  Rt[7] = -V[0];
-  Rt[2] = -V[1];
-  Rt[5] = V[0];
-  Rt[8] = 0.0;
+  Wh[0] = 0.0;
+  Wh[3] = -V[2];
+  Wh[6] = V[1];
+  Wh[1] = V[2];
+  Wh[4] = 0.0;
+  Wh[7] = -V[0];
+  Wh[2] = -V[1];
+  Wh[5] = V[0];
+  Wh[8] = 0.0;
   /* --------------------------------------------------------------------------
    */
   for (i = 0; i < 3; i++) {
-    bkj = Rt[3 * i];
+    bkj = Wh[3 * i];
     adV[6 * i] = bkj;
     inner = 6 * (i + 3);
     adV[inner + 3] = bkj;
-    bkj = Rt[3 * i + 1];
+    bkj = Wh[3 * i + 1];
     adV[6 * i + 1] = bkj;
     adV[inner + 4] = bkj;
-    bkj = Rt[3 * i + 2];
+    bkj = Wh[3 * i + 2];
     adV[6 * i + 2] = bkj;
     adV[inner + 5] = bkj;
   }
@@ -298,20 +298,19 @@ static void LagrangianODEX(const emxArray_real_T *x, const emxArray_real_T *dx,
   adV[11] = V[3];
   adV[17] = 0.0;
   /*  compute inertia, coriolis, gravity */
-  dv1[0] = 0.0;
-  dv1[1] = 0.0;
-  dv1[2] = 0.0;
-  dv1[3] = Gvec[0];
-  dv1[4] = Gvec[1];
-  dv1[5] = Gvec[2];
+  dv[0] = 0.0;
+  dv[1] = 0.0;
+  dv[2] = 0.0;
+  bkj = Gvec[0];
+  d = Gvec[1];
+  d1 = Gvec[2];
+  for (i = 0; i < 3; i++) {
+    dv[i + 3] = (Rt_tmp[i] * bkj + Rt_tmp[i + 3] * d) + Rt_tmp[i + 6] * d1;
+  }
   for (i = 0; i < 6; i++) {
     bkj = 0.0;
     for (i1 = 0; i1 < 6; i1++) {
-      d = 0.0;
-      for (n = 0; n < 6; n++) {
-        d += Ai[i + 6 * n] * Mtt[n + 6 * i1];
-      }
-      bkj += d * dv1[i1];
+      bkj += Mtt[i + 6 * i1] * dv[i1];
     }
     y[i] = bkj;
   }
@@ -340,21 +339,21 @@ static void LagrangianODEX(const emxArray_real_T *x, const emxArray_real_T *dx,
   for (i = 0; i < nc; i++) {
     dZ1_data[i] = 0.0;
   }
-  dv[0] = 0.0;
-  dv[3] = -XI[2];
-  dv[6] = XI[1];
-  dv[1] = XI[2];
-  dv[4] = 0.0;
-  dv[7] = -XI[0];
-  dv[2] = -XI[1];
-  dv[5] = XI[0];
-  dv[8] = 0.0;
+  Wh[0] = 0.0;
+  Wh[3] = -XI[2];
+  Wh[6] = XI[1];
+  Wh[1] = XI[2];
+  Wh[4] = 0.0;
+  Wh[7] = -XI[0];
+  Wh[2] = -XI[1];
+  Wh[5] = XI[0];
+  Wh[8] = 0.0;
   for (i = 0; i < 3; i++) {
     dZ1_data[i + 18] = 0.0;
     for (i1 = 0; i1 < 3; i1++) {
       dZ1_data[i + 6 * i1] =
-          (Phi_[i] * dv[3 * i1] + Phi_[i + 3] * dv[3 * i1 + 1]) +
-          Phi_[i + 6] * dv[3 * i1 + 2];
+          (Phi_[i] * Wh[3 * i1] + Phi_[i + 3] * Wh[3 * i1 + 1]) +
+          Phi_[i + 6] * Wh[3 * i1 + 2];
       dZ1_data[i + 18] += Phi_[i + 3 * i1] * XI[i1 + 3];
     }
   }
@@ -398,7 +397,7 @@ static void LagrangianODEX(const emxArray_real_T *x, const emxArray_real_T *dx,
       for (nc = 0; nc < 6; nc++) {
         bkj += A[i1 + 6 * nc] * adV[nc + 6 * n];
       }
-      b_Ai[i1 + 6 * n] = bkj;
+      b_A[i1 + 6 * n] = bkj;
     }
   }
   n = y_tmp->size[1];
@@ -412,7 +411,7 @@ static void LagrangianODEX(const emxArray_real_T *x, const emxArray_real_T *dx,
     for (b_i = 0; b_i < 6; b_i++) {
       bkj = 0.0;
       for (k = 0; k < 6; k++) {
-        bkj += b_Ai[k * 6 + b_i] * y_tmp_data[nc + k];
+        bkj += b_A[k * 6 + b_i] * y_tmp_data[nc + k];
       }
       C_data[nc + b_i] = bkj;
     }
@@ -424,8 +423,8 @@ static void LagrangianODEX(const emxArray_real_T *x, const emxArray_real_T *dx,
     }
   }
   dZ1_data[22] =
-      (Mtt[21] * Z1_data[18] * Gvec[0] + Mtt[21] * Z1_data[19] * Gvec[1]) +
-      Mtt[21] * Z1_data[20] * Gvec[2];
+      (-Mtt[21] * Z1_data[18] * Gvec[0] + -Mtt[21] * Z1_data[19] * Gvec[1]) +
+      -Mtt[21] * Z1_data[20] * Gvec[2];
   bkj = 0.0;
   for (i = 0; i < 6; i++) {
     d = 0.0;
@@ -471,12 +470,12 @@ static void LagrangianODEX(const emxArray_real_T *x, const emxArray_real_T *dx,
         d += adV[nc + 6 * i1] * Mtt[inner];
       }
       inner = i1 + 6 * n;
-      b_Ai[inner] = d;
+      b_A[inner] = d;
       A[inner] = bkj;
     }
   }
   for (i1 = 0; i1 < 36; i1++) {
-    A[i1] -= b_Ai[i1];
+    A[i1] -= b_A[i1];
   }
   n = Jg->size[1];
   i1 = C->size[0] * C->size[1];

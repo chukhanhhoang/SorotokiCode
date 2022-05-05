@@ -21,7 +21,7 @@ shp.E    = 5.00;     % Young's modulus in Mpa
 shp.Nu   = 0.49;     % Poisson ratio
 shp.Rho  = 100; % Density in kg/m^3
 shp.Zeta = 0.1;      % Damping coefficient
-shp.Gvec = [0;0;9.81];
+shp.Gvec = [0;0;-9.81];
 shp = shp.rebuild();
 Theta_ = shp.get('ThetaEval');
 Theta = pagemtimes(shp.Ba,Theta_);
@@ -36,7 +36,6 @@ mdl.G_u = eye(numel(mdl.q0));
 mdl.G_u(:,end-2:end) = [];
 % find final config
 tic
-% qd = find_qd_from_obj(mdl,obj);
 qd = shape_optim(mdl,obj,Sd);
 qd = nonl_dist_optim(mdl,qd);
 toc
@@ -60,7 +59,6 @@ colororder(col);
 % hold on;
 [rig] = setupRig(M,L,Modes);
 obj_gmodel.bake().render()
-% gif('SpringControl_added_stiffness.gif')
 for ii = 1:fps(mdl.Log.t,FPS):length(mdl.Log.q)
     rig = rig.computeFK(mdl.Log.q(ii,:));
     rig = rig.update();
@@ -71,9 +69,10 @@ for ii = 1:fps(mdl.Log.t,FPS):length(mdl.Log.q)
     view(30,30);
     drawnow();
 %     if ii == 1
-%         gif('SpringControl.gif')
+%         gif('UnderactuatedControl_qd.gif')
+%     else
+%         gif
 %     end
-%     gif
 end
 
 
@@ -181,7 +180,7 @@ function [tau,error] = Controller(mdl,sphere)
     %tau        = zeros(n,1);
     error = zeros(6,1);
     % compensate gravity
-    dV_dq = mdl.Log.EL.G + mdl.Log.EL.K*mdl.Log.q;
+    dV_dq = -mdl.Log.EL.G + mdl.Log.EL.K*mdl.Log.q;
 %     dV_dq = mdl.Log.EL.K*mdl.Log.q;
     p = mdl.Log.p;
     Phi = mdl.Log.Phi;
@@ -218,7 +217,7 @@ function [tau,error] = Controller_qd(mdl,qd)
     % 
     %tau        = zeros(n,1);
     error = mdl.Log.q-qd;
-    dV_dq = mdl.Log.EL.G + mdl.Log.EL.K*mdl.Log.q;
+    dV_dq = -mdl.Log.EL.G + mdl.Log.EL.K*mdl.Log.q;
     dVd_dq = mdl.Log.EL.K*(mdl.Log.q-qd);
     tau = mdl.G_u*pinv(mdl.G_u)*(dV_dq-dVd_dq-3*mdl.Log.EL.M*mdl.Log.dq);
 end

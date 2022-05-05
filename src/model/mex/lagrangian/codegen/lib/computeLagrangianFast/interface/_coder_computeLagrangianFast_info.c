@@ -55,7 +55,7 @@ mxArray *emlrtMexFcnProperties(void)
                     (const char_T *)"/home/hoang/2022/SorotokiCode/src/model/"
                                     "mex/lagrangian/computeLagrangianFast.m"));
   emlrtSetField(xEntryPoints, 0, (const char_T *)"TimeStamp",
-                emlrtMxCreateDoubleScalar(738643.46760416671));
+                emlrtMxCreateDoubleScalar(738646.78962962958));
   xResult =
       emlrtCreateStructMatrix(1, 1, 6, (const char_T **)&propFieldName[0]);
   emlrtSetField(
