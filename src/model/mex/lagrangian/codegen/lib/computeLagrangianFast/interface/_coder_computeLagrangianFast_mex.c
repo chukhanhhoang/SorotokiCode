@@ -35,7 +35,7 @@ emlrtCTX mexFunctionCreateRootTLS(void)
 
 void unsafe_computeLagrangianFast_mexFunction(int32_T nlhs, mxArray *plhs[11],
                                               int32_T nrhs,
-                                              const mxArray *prhs[12])
+                                              const mxArray *prhs[16])
 {
   emlrtStack st = {
       NULL, /* site */
@@ -46,8 +46,8 @@ void unsafe_computeLagrangianFast_mexFunction(int32_T nlhs, mxArray *plhs[11],
   int32_T b_nlhs;
   st.tls = emlrtRootTLSGlobal;
   /* Check for proper number of arguments. */
-  if (nrhs != 12) {
-    emlrtErrMsgIdAndTxt(&st, "EMLRT:runTime:WrongNumberOfInputs", 5, 12, 12, 4,
+  if (nrhs != 16) {
+    emlrtErrMsgIdAndTxt(&st, "EMLRT:runTime:WrongNumberOfInputs", 5, 12, 16, 4,
                         21, "computeLagrangianFast");
   }
   if (nlhs > 11) {

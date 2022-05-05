@@ -12,6 +12,7 @@
 /* Include files */
 #include "computeLagrangianFast_emxutil.h"
 #include "computeLagrangianFast_types.h"
+#include "rt_nonfinite.h"
 #include <stdlib.h>
 #include <string.h>
 

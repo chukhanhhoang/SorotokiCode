@@ -11,8 +11,8 @@ function [M,C,K,R,G,p,Phi,J,Jt,Vg,Kin] = computeLagrangianFast(x,dx,... % states
     Zeta,...    % dampings coefficient
     Gvec,...    % gravitional vector  
     k,...       % potential constant
-    npe,...       % potential energy power (k/((r-r0)^n)), n must be odd
-    r0)         % potential constant
+    npe,...     % potential energy power (k/((norm(r-r0)-rs)^n)), n must be odd
+    r0,rs)      % potential constants
 
 % compute total length
 n    = numel(x);
@@ -33,11 +33,11 @@ for ii = 1:(size(Th,3)/2)
     
     % first EL-diff eval
     [K1Z1,K1Z2] = LagrangianODEX(x, dx, Z1,...
-        Th(:,:,2*ii-1), xia0(:,1,2*ii-1), Ba, Mtt, Ktt, Gvec,k,npe,r0);
+        Th(:,:,2*ii-1), xia0(:,1,2*ii-1), Ba, Mtt, Ktt, Gvec,k,npe,r0,rs);
     
     % second EL-diff eval
     [K2Z1,K2Z2] = LagrangianODEX(x, dx, Z1 + (2/3)*ds*K1Z1,...
-        Th(:,:,2*ii), xia0(:,1,2*ii), Ba, Mtt, Ktt, Gvec,k,npe,r0);
+        Th(:,:,2*ii), xia0(:,1,2*ii), Ba, Mtt, Ktt, Gvec,k,npe,r0,rs);
     
     % update integrands
     s  = s  + ds;
@@ -66,7 +66,7 @@ R = Zeta*K;
 end
 
 function [dZ1,dZ2] = LagrangianODEX(x,dx,Z1,...
-    Theta,xia0,Ba,Mtt,Ktt,Gvec,k,npe,r0)
+    Theta,xia0,Ba,Mtt,Ktt,Gvec,k,npe,r0,rs)
 
 n     = numel(x);
 p_    = Z1(1:3,4);
@@ -103,7 +103,8 @@ dM = (Jg).'*Mtt*Jg;
 dC = (Jg).'*((Mtt*adV - adV.'*Mtt)*Jg  + Mtt*Jgt);
 
 rd = p_-r0;
-Fpe= npe*k/(rd^(npe+1))*rd/norm(rd);
+abs_rd = norm(rd);
+Fpe= npe*k/((abs_rd-rs)^(npe+1))*rd/abs_rd;
 dG = (Jg).'*(Mtt*[0;0;0;Phi_.'*Gvec] + [0;0;0;Phi_.'*Fpe]);
 
 % compute (nonlinear stiffness)
@@ -111,7 +112,7 @@ dK = (BTh).'*Ktt*(BTh);
 
 % compute potential energy
 dKe = 0.5*V.'*Mtt*V;
-dVg = -Mtt(4,4)*p_.'*Gvec+k/(rd^npe);
+dVg = -Mtt(4,4)*p_.'*Gvec+k/((abs_rd-rs)^npe);
 
 % assemble matrices
 dZ1                      = zeros(6,6+2*(n-1));

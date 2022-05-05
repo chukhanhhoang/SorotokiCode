@@ -2,7 +2,7 @@
 ## Makefile generated for component 'computeLagrangianFast'. 
 ## 
 ## Makefile     : computeLagrangianFast_rtw.mk
-## Generated on : Mon May 02 11:16:33 2022
+## Generated on : Thu May 05 20:13:44 2022
 ## Final product: ./computeLagrangianFast.a
 ## Product type : static-library
 ## 
@@ -167,7 +167,7 @@ DEFINES = $(DEFINES_CUSTOM) $(DEFINES_STANDARD)
 ## SOURCE FILES
 ###########################################################################
 
-SRCS = $(START_DIR)/codegen/lib/computeLagrangianFast/computeLagrangianFast_data.c $(START_DIR)/codegen/lib/computeLagrangianFast/computeLagrangianFast_initialize.c $(START_DIR)/codegen/lib/computeLagrangianFast/computeLagrangianFast_terminate.c $(START_DIR)/codegen/lib/computeLagrangianFast/computeLagrangianFast.c $(START_DIR)/codegen/lib/computeLagrangianFast/mtimes.c $(START_DIR)/codegen/lib/computeLagrangianFast/computeLagrangianFast_emxutil.c $(START_DIR)/codegen/lib/computeLagrangianFast/computeLagrangianFast_emxAPI.c
+SRCS = $(START_DIR)/codegen/lib/computeLagrangianFast/computeLagrangianFast_data.c $(START_DIR)/codegen/lib/computeLagrangianFast/rt_nonfinite.c $(START_DIR)/codegen/lib/computeLagrangianFast/rtGetNaN.c $(START_DIR)/codegen/lib/computeLagrangianFast/rtGetInf.c $(START_DIR)/codegen/lib/computeLagrangianFast/computeLagrangianFast_initialize.c $(START_DIR)/codegen/lib/computeLagrangianFast/computeLagrangianFast_terminate.c $(START_DIR)/codegen/lib/computeLagrangianFast/computeLagrangianFast.c $(START_DIR)/codegen/lib/computeLagrangianFast/mtimes.c $(START_DIR)/codegen/lib/computeLagrangianFast/computeLagrangianFast_emxutil.c $(START_DIR)/codegen/lib/computeLagrangianFast/computeLagrangianFast_emxAPI.c
 
 ALL_SRCS = $(SRCS)
 
@@ -175,7 +175,7 @@ ALL_SRCS = $(SRCS)
 ## OBJECTS
 ###########################################################################
 
-OBJS = computeLagrangianFast_data.o computeLagrangianFast_initialize.o computeLagrangianFast_terminate.o computeLagrangianFast.o mtimes.o computeLagrangianFast_emxutil.o computeLagrangianFast_emxAPI.o
+OBJS = computeLagrangianFast_data.o rt_nonfinite.o rtGetNaN.o rtGetInf.o computeLagrangianFast_initialize.o computeLagrangianFast_terminate.o computeLagrangianFast.o mtimes.o computeLagrangianFast_emxutil.o computeLagrangianFast_emxAPI.o
 
 ALL_OBJS = $(OBJS)
 
@@ -299,6 +299,18 @@ $(PRODUCT) : $(OBJS) $(PREBUILT_OBJS)
 
 
 computeLagrangianFast_data.o : $(START_DIR)/codegen/lib/computeLagrangianFast/computeLagrangianFast_data.c
+	$(CC) $(CFLAGS) -o "$@" "$<"
+
+
+rt_nonfinite.o : $(START_DIR)/codegen/lib/computeLagrangianFast/rt_nonfinite.c
+	$(CC) $(CFLAGS) -o "$@" "$<"
+
+
+rtGetNaN.o : $(START_DIR)/codegen/lib/computeLagrangianFast/rtGetNaN.c
+	$(CC) $(CFLAGS) -o "$@" "$<"
+
+
+rtGetInf.o : $(START_DIR)/codegen/lib/computeLagrangianFast/rtGetInf.c
 	$(CC) $(CFLAGS) -o "$@" "$<"
 
 

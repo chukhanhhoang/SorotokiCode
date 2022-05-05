@@ -42,11 +42,11 @@ mxArray *emlrtMexFcnProperties(void)
                                     "CoverageInfo", "IsPolymorphic"};
   xEntryPoints =
       emlrtCreateStructMatrix(1, 1, 6, (const char_T **)&epFieldName[0]);
-  xInputs = emlrtCreateLogicalMatrix(1, 12);
+  xInputs = emlrtCreateLogicalMatrix(1, 16);
   emlrtSetField(xEntryPoints, 0, (const char_T *)"Name",
                 emlrtMxCreateString((const char_T *)"computeLagrangianFast"));
   emlrtSetField(xEntryPoints, 0, (const char_T *)"NumberOfInputs",
-                emlrtMxCreateDoubleScalar(12.0));
+                emlrtMxCreateDoubleScalar(16.0));
   emlrtSetField(xEntryPoints, 0, (const char_T *)"NumberOfOutputs",
                 emlrtMxCreateDoubleScalar(11.0));
   emlrtSetField(xEntryPoints, 0, (const char_T *)"ConstantInputs", xInputs);
@@ -55,7 +55,7 @@ mxArray *emlrtMexFcnProperties(void)
                     (const char_T *)"/home/hoang/2022/SorotokiCode/src/model/"
                                     "mex/lagrangian/computeLagrangianFast.m"));
   emlrtSetField(xEntryPoints, 0, (const char_T *)"TimeStamp",
-                emlrtMxCreateDoubleScalar(738646.78962962958));
+                emlrtMxCreateDoubleScalar(738646.84908564819));
   xResult =
       emlrtCreateStructMatrix(1, 1, 6, (const char_T **)&propFieldName[0]);
   emlrtSetField(

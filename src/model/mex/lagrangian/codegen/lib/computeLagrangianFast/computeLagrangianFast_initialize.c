@@ -11,6 +11,7 @@
 
 /* Include files */
 #include "computeLagrangianFast_initialize.h"
+#include "rt_nonfinite.h"
 
 /* Function Definitions */
 void computeLagrangianFast_initialize(void)

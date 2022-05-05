@@ -545,7 +545,7 @@ static real_T (*x_emlrt_marshallIn(const emlrtStack *sp, const mxArray *src,
   return ret;
 }
 
-void computeLagrangianFast_api(const mxArray *const prhs[12], int32_T nlhs,
+void computeLagrangianFast_api(const mxArray *const prhs[16], int32_T nlhs,
                                const mxArray *plhs[11])
 {
   emlrtStack st = {
@@ -572,10 +572,14 @@ void computeLagrangianFast_api(const mxArray *const prhs[12], int32_T nlhs,
   real_T(*Phi0)[9];
   real_T(*Gvec)[3];
   real_T(*p0)[3];
+  real_T(*r0)[3];
   real_T Kin;
   real_T Vg;
   real_T Zeta;
   real_T ds;
+  real_T k;
+  real_T npe;
+  real_T rs;
   st.tls = emlrtRootTLSGlobal;
   emlrtHeapReferenceStackEnterFcnR2012b(&st);
   emxInit_real_T(&st, &x, 1);
@@ -610,9 +614,14 @@ void computeLagrangianFast_api(const mxArray *const prhs[12], int32_T nlhs,
   Mtt = o_emlrt_marshallIn(&st, emlrtAlias(prhs[9]), "Mtt");
   Zeta = c_emlrt_marshallIn(&st, emlrtAliasP(prhs[10]), "Zeta");
   Gvec = e_emlrt_marshallIn(&st, emlrtAlias(prhs[11]), "Gvec");
+  k = c_emlrt_marshallIn(&st, emlrtAliasP(prhs[12]), "k");
+  npe = c_emlrt_marshallIn(&st, emlrtAliasP(prhs[13]), "npe");
+  r0 = e_emlrt_marshallIn(&st, emlrtAlias(prhs[14]), "r0");
+  rs = c_emlrt_marshallIn(&st, emlrtAliasP(prhs[15]), "rs");
   /* Invoke the target function */
   computeLagrangianFast(x, dx, ds, *p0, *Phi0, xia0, Th, Ba, *Ktt, *Mtt, Zeta,
-                        *Gvec, M, C, K, R, G, p, Phi, J, Jt, &Vg, &Kin);
+                        *Gvec, k, npe, *r0, rs, M, C, K, R, G, p, Phi, J, Jt,
+                        &Vg, &Kin);
   /* Marshall function outputs */
   M->canFreeData = false;
   plhs[0] = emlrt_marshallOut(M);

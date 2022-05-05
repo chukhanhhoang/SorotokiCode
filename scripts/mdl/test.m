@@ -28,7 +28,12 @@ Theta = pagemtimes(shp.Ba,Theta_);
 
 %%
 mdl = cModel(shp,'Tstep',H,'Tsim',6);
-% mdl.gVec = [0;0;0-9.81e3];%-9.81e3
+
+mdl.k = 1e-8;
+mdl.npe = 5;
+mdl.r0 = [0.06;0;-0.06];
+mdl.rs = 0.02;
+
 mdl.q0(1) = 0;
 mdl.q0(3:end) = 2*rand(shp.NDim-2,1);
 mdl = mdl.computeEL(mdl.q0);

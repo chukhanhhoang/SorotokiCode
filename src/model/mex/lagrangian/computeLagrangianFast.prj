@@ -1,5 +1,5 @@
 <deployment-project plugin="plugin.coder" plugin-version="R2021a">
-  <configuration build-checksum="3523666054" file="/home/hoang/2022/SorotokiCode/src/model/mex/lagrangian/computeLagrangianFast.prj" location="/home/hoang/2022/SorotokiCode/src/model/mex/lagrangian" name="computeLagrangianFast" target="target.unifiedcoder" target-name="MATLAB Coder">
+  <configuration build-checksum="725602589" file="/home/hoang/2022/SorotokiCode/src/model/mex/lagrangian/computeLagrangianFast.prj" location="/home/hoang/2022/SorotokiCode/src/model/mex/lagrangian" name="computeLagrangianFast" target="target.unifiedcoder" target-name="MATLAB Coder">
     <profile key="profile.mex">
       <param.BuiltInstrumentedMex>false</param.BuiltInstrumentedMex>
       <param.RanInstrumentedMex>false</param.RanInstrumentedMex>
@@ -579,7 +579,7 @@
     <param.AutoInferUnboundedSizeThreshold>2048</param.AutoInferUnboundedSizeThreshold>
     <param.EnableFixedPointStep>false</param.EnableFixedPointStep>
     <param.EnableScreener>true</param.EnableScreener>
-    <param.AnnotationChecksum>3175988971</param.AnnotationChecksum>
+    <param.AnnotationChecksum>1759112994</param.AnnotationChecksum>
     <var.LegacyTarget />
     <var.MirrorOnOpen>false</var.MirrorOnOpen>
     <param.FixedPointEnabled>false</param.FixedPointEnabled>
@@ -589,12 +589,12 @@
     <param.hdlParamStorage />
     <var.gc.lastOutputRoot>codegen/lib/computeLagrangianFast</var.gc.lastOutputRoot>
     <var.gc.lastOutputType>C_CODE</var.gc.lastOutputType>
-    <var.gc.preBuildChecksum>3372811491</var.gc.preBuildChecksum>
+    <var.gc.preBuildChecksum>808465784</var.gc.preBuildChecksum>
     <var.cfi.lastOutputRoot>codegen/mex/computeLagrangianFast</var.cfi.lastOutputRoot>
-    <var.cfi.preBuildChecksum>1501482105</var.cfi.preBuildChecksum>
+    <var.cfi.preBuildChecksum>4047722202</var.cfi.preBuildChecksum>
     <var.lastCfiTestSnippet>entrypoint_CLF</var.lastCfiTestSnippet>
     <var.outdatedOnRestore>false</var.outdatedOnRestore>
-    <var.lastUserSourceChecksum>&lt;?xml version="1.0" encoding="UTF-8" standalone="yes"?&gt;&lt;checksum&gt;&lt;includedFiles&gt;&lt;file&gt;/home/hoang/2022/SorotokiCode/src/model/mex/lagrangian/computeLagrangianFast.m&lt;/file&gt;&lt;/includedFiles&gt;&lt;value&gt;2088910805&lt;/value&gt;&lt;/checksum&gt;</var.lastUserSourceChecksum>
+    <var.lastUserSourceChecksum>&lt;?xml version="1.0" encoding="UTF-8" standalone="yes"?&gt;&lt;checksum&gt;&lt;includedFiles&gt;&lt;file&gt;/home/hoang/2022/SorotokiCode/src/model/mex/lagrangian/computeLagrangianFast.m&lt;/file&gt;&lt;/includedFiles&gt;&lt;value&gt;3750959936&lt;/value&gt;&lt;/checksum&gt;</var.lastUserSourceChecksum>
     <var.sourceSetState>&lt;?xml version="1.0" encoding="UTF-8" standalone="yes"?&gt;&lt;sourceModel&gt;&lt;primarySourceFiles&gt;&lt;file&gt;/home/hoang/2022/SorotokiCode/src/model/mex/lagrangian/computeLagrangianFast.m&lt;/file&gt;&lt;/primarySourceFiles&gt;&lt;fixedPointSourceFiles/&gt;&lt;fixedPointSourceRegistered&gt;false&lt;/fixedPointSourceRegistered&gt;&lt;fixedPointSourceSelected&gt;false&lt;/fixedPointSourceSelected&gt;&lt;/sourceModel&gt;</var.sourceSetState>
     <param.forceMexBuild>false</param.forceMexBuild>
     <param.NoDefaultJIT>false</param.NoDefaultJIT>
@@ -645,8 +645,8 @@
     <param.deeplearning.DeepLearningCustomCallback />
     <param.deeplearning.TargetLib>option.deeplearning.targetlibrary.none</param.deeplearning.TargetLib>
     <var.cfiTargetLibSuppression>false</var.cfiTargetLibSuppression>
-    <var.hasMatlabDeepLearningSupportPackage>false</var.hasMatlabDeepLearningSupportPackage>
-    <var.hasGpuDeepLearningSupportPackage>false</var.hasGpuDeepLearningSupportPackage>
+    <var.hasMatlabDeepLearningSupportPackage>true</var.hasMatlabDeepLearningSupportPackage>
+    <var.hasGpuDeepLearningSupportPackage>true</var.hasGpuDeepLearningSupportPackage>
     <param.tensorrt.DataType>option.tensorrt.datatype.fp32</param.tensorrt.DataType>
     <param.tensorrt.DataPath />
     <param.tensorrt.NumCalibrationBatches>0</param.tensorrt.NumCalibrationBatches>
@@ -780,6 +780,8 @@
       <param.deeplearning.DeepLearningCustomCallback />
       <param.deeplearning.TargetLib />
       <var.cfiTargetLibSuppression />
+      <var.hasMatlabDeepLearningSupportPackage />
+      <var.hasGpuDeepLearningSupportPackage />
       <param.tensorrt.DataType />
       <param.tensorrt.DataPath />
       <param.tensorrt.NumCalibrationBatches />
@@ -842,7 +844,7 @@
     </unset>
     <fileset.entrypoints>
       <file custom-data-expanded="false" value="${PROJECT_ROOT}/computeLagrangianFast.m">
-        <Marker>1651773422142</Marker>
+        <Marker>1651774913381</Marker>
       </file>
     </fileset.entrypoints>
     <fileset.testbench>
@@ -865,7 +867,8 @@
           <Input Name="Gvec" typeId="2" />
           <Input Name="k" typeId="8" />
           <Input Name="npe" typeId="8" />
-          <Input Name="r0" typeId="8" />
+          <Input Name="r0" typeId="9" />
+          <Input Name="rs" typeId="8" />
           <idpTable>
             <type typeId="0">
               <Class>double</Class>
@@ -940,11 +943,20 @@
               <Sparse>false</Sparse>
             </type>
             <type typeId="8">
-              <Class>&lt;Undefined&gt;</Class>
+              <Class>double</Class>
               <Size>1 x 1</Size>
               <Value />
               <InitialValue />
-              <UserDefined>false</UserDefined>
+              <UserDefined>true</UserDefined>
+              <Complex>false</Complex>
+              <Sparse>false</Sparse>
+            </type>
+            <type typeId="9">
+              <Class>double</Class>
+              <Size>3 x 1</Size>
+              <Value />
+              <InitialValue />
+              <UserDefined>true</UserDefined>
               <Complex>false</Complex>
               <Sparse>false</Sparse>
             </type>

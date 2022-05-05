@@ -13,6 +13,7 @@
 #include "mtimes.h"
 #include "computeLagrangianFast_emxutil.h"
 #include "computeLagrangianFast_types.h"
+#include "rt_nonfinite.h"
 
 /* Function Definitions */
 void b_mtimes(const emxArray_real_T *A, const emxArray_real_T *B,

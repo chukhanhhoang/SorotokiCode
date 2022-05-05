@@ -29,7 +29,7 @@ emlrtCTX mexFunctionCreateRootTLS(void);
 
 void unsafe_computeLagrangianFast_mexFunction(int32_T nlhs, mxArray *plhs[11],
                                               int32_T nrhs,
-                                              const mxArray *prhs[12]);
+                                              const mxArray *prhs[16]);
 
 #ifdef __cplusplus
 }

@@ -48,6 +48,10 @@ Ktt  = shp.Ktt;
 Mtt  = shp.Mtt;
 Zeta = shp.Zeta;
 Gvec = [0;0;9e3];
+k = 1e-10;
+npe = 1;
+r0 = [0;0;0];
+rs = 1;
 
 [M,C,K,R,G,p,Phi,J,Vg,Kin] = computeLagrangianFast(x,dx,... % states
     ds,...      % spatial steps
@@ -59,6 +63,9 @@ Gvec = [0;0;9e3];
     Ktt,...     % geometric stiffness
     Mtt,...     % geometric inertia
     Zeta,...
-    Gvec);      
+    Gvec,...
+    k,...       % potential constant
+    npe,...       % potential energy power (k/((r-r0)^n)), n must be odd
+    r0,rs);      
 
 %clearvars -except M C K R G p Phi J Vg Kin

@@ -40,6 +40,7 @@
 #include "computeLagrangianFast_emxAPI.h"
 #include "computeLagrangianFast_terminate.h"
 #include "computeLagrangianFast_types.h"
+#include "rt_nonfinite.h"
 
 /* Function Declarations */
 static void argInit_3x1_real_T(double result[3]);
@@ -247,11 +248,12 @@ static void main_computeLagrangianFast(void)
   argInit_6x6_real_T(Ktt_tmp);
   /* Initialize function input argument 'Mtt'. */
   /* Initialize function input argument 'Gvec'. */
+  /* Initialize function input argument 'r0'. */
   /* Call the entry-point 'computeLagrangianFast'. */
   argInit_3x3_real_T(dv);
   computeLagrangianFast(x, dx, ds_tmp, p0_tmp, dv, xia0, Th, Ba, Ktt_tmp,
-                        Ktt_tmp, ds_tmp, p0_tmp, M, C, K, R, G, p, Phi, J, Jt,
-                        &Vg, &Kin);
+                        Ktt_tmp, ds_tmp, p0_tmp, ds_tmp, ds_tmp, p0_tmp, ds_tmp,
+                        M, C, K, R, G, p, Phi, J, Jt, &Vg, &Kin);
   emxDestroyArray_real_T(Jt);
   emxDestroyArray_real_T(J);
   emxDestroyArray_real_T(Phi);

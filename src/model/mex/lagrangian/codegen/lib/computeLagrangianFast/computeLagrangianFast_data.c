@@ -11,5 +11,6 @@
 
 /* Include files */
 #include "computeLagrangianFast_data.h"
+#include "rt_nonfinite.h"
 
 /* End of code generation (computeLagrangianFast_data.c) */
