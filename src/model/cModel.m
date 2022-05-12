@@ -14,6 +14,7 @@ classdef cModel
         object;object_center;pts_per_link;
         G_u; % input mapping
         k,npe,r0,rs;       % potential energy power (k/((norm(r-r0)-rs)^n)), n must be odd
+        qd; %desired state
     end
     
     properties (Access = private)
@@ -34,6 +35,7 @@ classdef cModel
         
         Ba;
         ShpFnc;
+        x,xdot, L1c, L2c,L1d,L2d; % observer state and matrices
     end
     
 %--------------------------------------------------------------------------
@@ -303,11 +305,27 @@ function [M_,C_,K_,R_,G_,p_,Phi_,J_,Jt_,Vg_,Kin_] = getMatrices(cModel,Q)
             cModel.k,cModel.npe,cModel.r0,cModel.rs);      
 end
 
+function cModel = setupObserver(cModel, L1c, L2c)
+    cModel.x = zeros(size(cModel.q0));
+    cModel.L1c = L1c;
+    cModel.L2c = L2c;
+    cModel.L1d = expm(cModel.Tstep *L1c);
+    cModel.L2d = inv(L1c)*(cModel.L1d-eye(size(cModel.L1d)))*L2c;
+end
+
+function cModel = getObserverEst(cModel,q,qd)
+    cModel.xdot = cModel.L1c*cModel.x + cModel.L2c * (q-qd);
+end
+
+function cModel = updateObserver(cModel,q,qd)
+    cModel.x = cModel.L1d*cModel.x + cModel.L2d * (q-qd);
+end
+
 end
 %--------------------------------------------------------------------------
 methods (Access = private) %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %----------------------------------------- implicit time-integration solver
-function [Ts, X, U, Kin, Ue, Ug] = simulateSoftRobot(cModel,z0)
+function [Ts, X, U, Kin, Ue, Ug,cModel] = simulateSoftRobot(cModel,z0)
 
 Ts  = cModel.t(:);
 h   = mean(diff(Ts));
@@ -334,7 +352,7 @@ for ii = 1:length(Ts)-1
     dW  = 1e3;
     w_  = z;
     itr = 1;
-    
+    cModel = cModel.getObserverEst(cModel.Log.q, cModel.qd);
     while (dW > cModel.ResidualNorm && itr <= cModel.MaxIteration)
         
         % compute flow field
@@ -366,6 +384,7 @@ for ii = 1:length(Ts)-1
     end
     
     % update states
+    cModel = cModel.updateObserver(cModel.Log.q, cModel.qd);
     z = w_;
        
     % write output data

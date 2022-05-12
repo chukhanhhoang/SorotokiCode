@@ -44,7 +44,7 @@ while norm(e) > 1.32e-2 && k < 400
         
         [dr, dE] = EnergyController(...
             g(:,:,ii), gd,...
-            J(:,:,ii));                     
+            J(:,:,ii),ii/shp.NNode);                     
         
         dq = dq + dr;
         
@@ -85,15 +85,15 @@ qd = q;
 
 end
 
-function [dq, E] = EnergyController(g,gd,J)
-    
+function [dq, E] = EnergyController(g,gd,J,sigma) % sigma: 0 to 1
+    %
     k1   = 0.003;
     k2   = 10;
     lam1 = 5;
     
     % conditioner
     W  = 1;
-    Kp = diag([k1,k1,k1,k2,k2,k2]);
+    Kp = 5*sigma*diag([k1,k1,k1,k2,k2,k2]);
 
     Xi = logmapSE3(g\gd);
     Fu = Kp*tmapSE3(W*Xi)*wedge(W*Xi);

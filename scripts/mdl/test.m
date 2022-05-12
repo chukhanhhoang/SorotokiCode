@@ -27,7 +27,7 @@ Theta_ = shp.get('ThetaEval');
 Theta = pagemtimes(shp.Ba,Theta_);
 
 %%
-mdl = cModel(shp,'Tstep',H,'Tsim',6);
+mdl = cModel(shp,'Tstep',H,'Tsim',12);
 
 mdl.k = 1e-8;
 mdl.npe = 5;
@@ -38,7 +38,13 @@ mdl.q0(1) = 0;
 mdl.q0(3:end) = 2*rand(shp.NDim-2,1);
 mdl = mdl.computeEL(mdl.q0);
 mdl.G_u = eye(numel(mdl.q0));
-mdl.G_u(:,end-2:end) = [];
+mdl.G_u(:,end-1:end) = [];
+
+% Set up observer
+L1c = -6*eye(size(mdl.q0,1));
+L2c = 6*mdl.G_u*mdl.G_u.';
+mdl = mdl.setupObserver(L1c,L2c);
+
 % find final config
 tic
 qd = shape_optim(mdl,obj,Sd);
@@ -46,7 +52,7 @@ qd = nonl_dist_optim(mdl,qd);
 toc
 p = shp.FK(qd);
 
-
+mdl.qd = qd;
 
 
 %% controller
@@ -71,10 +77,10 @@ for ii = 1:fps(mdl.Log.t,FPS):length(mdl.Log.q)
     plot3(p(:,1),p(:,2),p(:,3),'LineW',3,'Color',col(1));
     scatter3(p(end,1),p(end,2),p(end,3),100,col(2));
     axis([-.5*L .5*L -.5*L .5*L -L 0.1*L]);
-    view(30,30);
+    view(0,30);
     drawnow();
 %     if ii == 1
-%         gif('UnderactuatedControl_qd.gif')
+%         gif('UnderactuatedControllerObserver_qd.gif')
 %     else
 %         gif
 %     end
@@ -217,14 +223,24 @@ end
 
 %% setup controller
 function [tau,error] = Controller_qd(mdl,qd)
+    use_ob = true;
     n = numel(mdl.Log.q);
     t = mdl.Log.t;
     % 
     %tau        = zeros(n,1);
     error = mdl.Log.q-qd;
     dV_dq = -mdl.Log.EL.G + mdl.Log.EL.K*mdl.Log.q;
-    dVd_dq = mdl.Log.EL.K*(mdl.Log.q-qd);
-    tau = mdl.G_u*pinv(mdl.G_u)*(dV_dq-dVd_dq-3*mdl.Log.EL.M*mdl.Log.dq);
+    dVd_dq = 0.2*mdl.Log.EL.K*(mdl.Log.q-qd);
+    if use_ob
+        xdot = mdl.get('xdot');
+        if ~isempty(xdot)
+            tau = mdl.G_u*(pinv(mdl.G_u)*(dV_dq-dVd_dq)-6*mdl.G_u.'*xdot);
+        else
+            tau = mdl.G_u*(pinv(mdl.G_u)*(dV_dq-dVd_dq));
+        end
+    else
+        tau = mdl.G_u*(pinv(mdl.G_u)*(dV_dq-dVd_dq)-6*mdl.G_u.'*mdl.Log.dq);
+    end
 end
 
 %% setup rig
